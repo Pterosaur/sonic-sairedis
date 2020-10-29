@@ -471,6 +471,7 @@ sai_status_t SwitchStateBase::setAclEntry(
     }
 
     auto sid = sai_serialize_object_id(entry_id);
+
     return set_internal(SAI_OBJECT_TYPE_ACL_ENTRY, sid, attr);
 }
 
@@ -487,6 +488,7 @@ sai_status_t SwitchStateBase::set(
         sai_deserialize_object_id(serializedObjectId, objectId);
         return setPort(objectId, attr);
     }
+
     if (objectType == SAI_OBJECT_TYPE_ACL_ENTRY)
     {
         sai_object_id_t objectId;
@@ -690,6 +692,7 @@ sai_status_t SwitchStateBase::get(
             attr_count,
             attr_list);
     }
+
     return get_internal(objectType, serializedObjectId, attr_count, attr_list);
 }
 

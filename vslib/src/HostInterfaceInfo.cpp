@@ -91,26 +91,36 @@ void HostInterfaceInfo::async_process_packet_for_fdb_event(
 }
 
 bool HostInterfaceInfo::installEth2TapFilter(
-    int priority,
-    std::shared_ptr<TrafficFilter> filter)
+        _In_ int priority,
+        _In_ std::shared_ptr<TrafficFilter> filter)
 {
+    SWSS_LOG_ENTER();
+
     return m_e2tFilters.installFilter(priority, filter);
 }
 
-bool HostInterfaceInfo::uninstallEth2TapFilter(std::shared_ptr<TrafficFilter> filter)
+bool HostInterfaceInfo::uninstallEth2TapFilter(
+        _In_ std::shared_ptr<TrafficFilter> filter)
 {
+    SWSS_LOG_ENTER();
+
     return m_e2tFilters.uninstallFilter(filter);
 }
 
 bool HostInterfaceInfo::installTap2EthFilter(
-    int priority,
-    std::shared_ptr<TrafficFilter> filter)
+        _In_ int priority,
+        _In_ std::shared_ptr<TrafficFilter> filter)
 {
+    SWSS_LOG_ENTER();
+
     return m_t2eFilters.installFilter(priority, filter);
 }
 
-bool HostInterfaceInfo::uninstallTap2EthFilter(std::shared_ptr<TrafficFilter> filter)
+bool HostInterfaceInfo::uninstallTap2EthFilter(
+        _In_ std::shared_ptr<TrafficFilter> filter)
 {
+    SWSS_LOG_ENTER();
+
     return m_t2eFilters.uninstallFilter(filter);
 }
 

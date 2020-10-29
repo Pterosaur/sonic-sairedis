@@ -45,6 +45,7 @@ sai_status_t SwitchStateBase::setAclEntryMACsecFlowActive(
         return SAI_STATUS_INVALID_PARAMETER;
     }
 
+    // Enable MACsec
     if (attr->value.aclaction.enable)
     {
         SWSS_LOG_DEBUG("Enable MACsec on entry %s", sai_serialize_object_id(entry_id).c_str());
@@ -59,7 +60,7 @@ sai_status_t SwitchStateBase::setAclEntryMACsecFlowActive(
         {
             for (auto &macsec_attr : macsec_attrs)
             {
-                if (m_macsec_manager.enable_macsec(macsec_attr))
+                if (m_macsecManager.enable_macsec(macsec_attr))
                 {
                     SWSS_LOG_NOTICE(
                         "Enable MACsec SA %s %s %u",
@@ -76,6 +77,7 @@ sai_status_t SwitchStateBase::setAclEntryMACsecFlowActive(
                 sai_serialize_object_id(entry_id).c_str());
         }
     }
+    // Disable MACsec
     else
     {
         SWSS_LOG_DEBUG("Disable MACsec on entry %s", sai_serialize_object_id(entry_id).c_str());
@@ -97,7 +99,7 @@ sai_status_t SwitchStateBase::setAclEntryMACsecFlowActive(
                     CHECK_STATUS(set_internal(SAI_OBJECT_TYPE_ACL_ENTRY, sid, attr));
                     return SAI_STATUS_FAILURE;
                 }
-                m_macsec_manager.delete_macsec_port(macsec_attrs.back());
+                m_macsecManager.delete_macsec_port(macsec_attrs.back());
             }
         }
         else
@@ -129,7 +131,7 @@ sai_status_t SwitchStateBase::createMACsecSA(
             attr_list,
             macsec_attr) == SAI_STATUS_SUCCESS)
     {
-        if (m_macsec_manager.enable_macsec(macsec_attr))
+        if (m_macsecManager.enable_macsec(macsec_attr))
         {
             SWSS_LOG_NOTICE(
                 "Enable MACsec SA %s %s %u",
@@ -154,7 +156,7 @@ sai_status_t SwitchStateBase::removeMACsecPort(
             macsec_port_id,
             macsec_attr) == SAI_STATUS_SUCCESS)
     {
-        m_macsec_manager.delete_macsec_port(macsec_attr);
+        m_macsecManager.delete_macsec_port(macsec_attr);
     }
 
     auto sid = sai_serialize_object_id(macsec_port_id);
@@ -177,7 +179,7 @@ sai_status_t SwitchStateBase::removeMACsecSC(
         // has to include one and can only include one SC
         if (macsec_attr.m_direction == SAI_MACSEC_DIRECTION_INGRESS)
         {
-            m_macsec_manager.delete_macsec_ingress_sc(macsec_attr);
+            m_macsecManager.delete_macsec_ingress_sc(macsec_attr);
         }
     }
 
@@ -198,11 +200,11 @@ sai_status_t SwitchStateBase::removeMACsecSA(
     {
         if (macsec_attr.m_direction == SAI_MACSEC_DIRECTION_EGRESS)
         {
-            m_macsec_manager.delete_macsec_egress_sa(macsec_attr);
+            m_macsecManager.delete_macsec_egress_sa(macsec_attr);
         }
         else
         {
-            m_macsec_manager.delete_macsec_ingress_sa(macsec_attr);
+            m_macsecManager.delete_macsec_ingress_sa(macsec_attr);
         }
         
     }
@@ -240,9 +242,11 @@ sai_status_t SwitchStateBase::findPortByMACsecFlow(
 
     std::vector<sai_attribute_t> attrs;
     sai_attribute_t attr;
+
     // MACsec flow => ACL entry => ACL table
     // MACsec flow => MACsec SC
     // (ACL table & MACsec SC) => port
+
     // Find ACL Entry
     attr.id = SAI_ACL_ENTRY_ATTR_ACTION_MACSEC_FLOW;
     attr.value.aclaction.parameter.oid = macsec_flow_id;
@@ -256,6 +260,7 @@ sai_status_t SwitchStateBase::findPortByMACsecFlow(
             sai_serialize_object_id(macsec_flow_id).c_str());
         return SAI_STATUS_FAILURE;
     }
+
     // Find ACL Table
     sai_object_id_t acl_table_id = SAI_NULL_OBJECT_ID;
     // All entries with same MACsec flow correspond one ACL Table
@@ -268,6 +273,7 @@ sai_status_t SwitchStateBase::findPortByMACsecFlow(
             sai_serialize_object_id(acl_entry_ids.front()).c_str());
         return SAI_STATUS_FAILURE;
     }
+
     // Find MACsec SC
     attr.id = SAI_MACSEC_SC_ATTR_FLOW_ID;
     attr.value.oid = macsec_flow_id;
@@ -282,6 +288,7 @@ sai_status_t SwitchStateBase::findPortByMACsecFlow(
             sai_serialize_object_id(macsec_flow_id).c_str());
         return SAI_STATUS_FAILURE;
     }
+
     attrs.clear();
     attrs.emplace_back();
     attrs.back().id = SAI_MACSEC_SC_ATTR_MACSEC_DIRECTION;
@@ -322,6 +329,7 @@ sai_status_t SwitchStateBase::findPortByMACsecFlow(
         return SAI_STATUS_FAILURE;
     }
     port_id = port_ids.front();
+
     return SAI_STATUS_SUCCESS;
 }
 
@@ -330,6 +338,7 @@ sai_status_t SwitchStateBase::findHostInterfaceInfoByPort(
         _Out_ std::shared_ptr<HostInterfaceInfo> &info)
 {
     SWSS_LOG_ENTER();
+
     info.reset();
     for (auto &kvp : m_hostif_info_map)
     {
@@ -383,6 +392,7 @@ sai_status_t SwitchStateBase::loadMACsecAttrFromMACsecSC(
     _Out_ MACsecAttr &macsec_attr)
 {
     SWSS_LOG_ENTER();
+
     if (attr_list == nullptr || attr_count == 0)
     {
         SWSS_LOG_ERROR("Attribute is empty");
@@ -502,6 +512,8 @@ sai_status_t SwitchStateBase::loadMACsecAttr(
     _In_ const sai_attribute_t *attr_list,
     _Out_ MACsecAttr &macsec_attr)
 {
+    SWSS_LOG_ENTER();
+
     switch (object_type)
     {
     case SAI_OBJECT_TYPE_MACSEC_PORT:
@@ -535,6 +547,7 @@ sai_status_t SwitchStateBase::loadMACsecAttr(
     _Out_ MACsecAttr &macsec_attr)
 {
     SWSS_LOG_ENTER();
+
     std::vector<sai_attribute_t> attrs;
     if (dumpObject(object_type, object_id, attrs))
     {
@@ -675,6 +688,8 @@ sai_status_t SwitchStateBase::getMACsecSAAttr(
         _In_ uint32_t attr_count,
         _Out_ sai_attribute_t *attr_list)
 {
+    SWSS_LOG_ENTER();
+
     auto ret = get_internal(
         SAI_OBJECT_TYPE_MACSEC_SA,
         serializedObjectId,
@@ -708,13 +723,15 @@ sai_status_t SwitchStateBase::getMACsecSAPacketNumber(
         _In_ sai_object_id_t macsec_sa_id,
         _Out_ sai_attribute_t &attr)
 {
+    SWSS_LOG_ENTER();
+
     MACsecAttr macsec_attr;
     if (loadMACsecAttr(
             SAI_OBJECT_TYPE_MACSEC_SA,
             macsec_sa_id,
             macsec_attr) == SAI_STATUS_SUCCESS)
     {
-        if (m_macsec_manager.get_macsec_sa_pn(macsec_attr, attr.value.u64))
+        if (m_macsecManager.get_macsec_sa_pn(macsec_attr, attr.value.u64))
         {
             return SAI_STATUS_SUCCESS;
         }

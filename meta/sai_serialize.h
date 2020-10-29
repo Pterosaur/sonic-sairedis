@@ -126,13 +126,13 @@ std::string sai_serialize_tunnel_stat(
 std::string sai_serialize_queue_attr(
         _In_ const sai_queue_attr_t attr);
 
-std::string sai_serialize_macsec_sa_attr(
-        _In_ const  sai_macsec_sa_attr_t attr);
-
-std::string sai_serialize_hex_binary(const void *buffer, size_t length);
+std::string sai_serialize_hex_binary(
+        _In_ const void *buffer,
+        _In_ size_t length);
 
 template <typename T>
-std::string sai_serialize_hex_binary(const T &value)
+std::string sai_serialize_hex_binary(
+        _In_ const T &value)
 {
     SWSS_LOG_ENTER();
 
@@ -346,10 +346,6 @@ void sai_deserialize_ingress_priority_group_attr(
 void sai_deserialize_queue_attr(
         _In_ const std::string& s,
         _Out_ sai_queue_attr_t& attr);
-
-void sai_deserialize_macsec_sa_attr(
-        _In_ const std::string& s,
-        _Out_ sai_macsec_sa_attr_t& attr);
 
 // sairedis
 

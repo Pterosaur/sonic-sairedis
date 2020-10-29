@@ -272,7 +272,9 @@ sai_status_t SwitchState::getStatsExt(
             {
                 localcounters[ id ] = 0;
             }
+
         }
+
     }
 
     return SAI_STATUS_SUCCESS;
@@ -303,9 +305,11 @@ void SwitchState::findObjects(
     SaiAttrWrap expect_wrap(object_type, &expect);
     const std::string expect_attr_name =
         sai_serialize_attr_id(*expect_wrap.getAttrMetadata());
+
     for (auto &obj : m_objectHash.at(object_type))
     {
         auto attr_itr = obj.second.find(expect_attr_name);
+
         if (attr_itr != obj.second.end()
             && attr_itr->second->getAttrStrValue() == expect_wrap.getAttrStrValue())
         {
@@ -313,7 +317,9 @@ void SwitchState::findObjects(
             sai_deserialize_object_id(obj.first, object_id);
             objects.push_back(object_id);
         }
+
     }
+
 }
 
 bool SwitchState::dumpObject(
@@ -326,13 +332,16 @@ bool SwitchState::dumpObject(
     attrs.clear();
     auto &objs = m_objectHash.at(object_type);
     auto obj = objs.find(sai_serialize_object_id(object_id));
+
     if (obj == objs.end())
     {
         return false;
     }
+
     for (auto &attr : obj->second)
     {
         attrs.push_back(*attr.second->getAttr());
     }
+
     return true;
 }

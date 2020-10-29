@@ -512,7 +512,7 @@ namespace saivs
                     _In_ sai_object_id_t macsec_sa_id,
                     _Out_ sai_attribute_t &attr);
 
-            MACsecManager m_macsec_manager;
+            MACsecManager m_macsecManager;
 
         protected:
 

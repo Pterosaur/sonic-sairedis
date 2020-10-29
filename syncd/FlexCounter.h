@@ -310,8 +310,8 @@ namespace syncd
                         _In_ sai_object_id_t macsecSA,
                         _In_ const std::vector<sai_macsec_sa_attr_t> &macsecSAIds);
 
-                sai_object_id_t macsecSAId;
-                std::vector<sai_macsec_sa_attr_t> macsecSAAttrIds;
+                sai_object_id_t m_macsecSAId;
+                std::vector<sai_macsec_sa_attr_t> m_macsecSAAttrIds;
             };
 
         private:

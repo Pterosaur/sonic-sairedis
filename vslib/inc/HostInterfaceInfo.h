@@ -41,13 +41,19 @@ namespace saivs
                     _In_ size_t size) const;
 
             bool installEth2TapFilter(
-                int priority,
-                std::shared_ptr<TrafficFilter> filter);
-            bool uninstallEth2TapFilter(std::shared_ptr<TrafficFilter> filter);
+                    _In_ int priority,
+                    _In_ std::shared_ptr<TrafficFilter> filter);
+
+            bool uninstallEth2TapFilter(
+                    _In_ std::shared_ptr<TrafficFilter> filter);
+
             bool installTap2EthFilter(
-                int priority,
-                std::shared_ptr<TrafficFilter> filter);
-            bool uninstallTap2EthFilter(std::shared_ptr<TrafficFilter> filter);
+                    _In_ int priority,
+                    _In_ std::shared_ptr<TrafficFilter> filter);
+
+            bool uninstallTap2EthFilter(
+                    _In_ std::shared_ptr<TrafficFilter> filter);
+
         private:
 
             void veth2tap_fun();

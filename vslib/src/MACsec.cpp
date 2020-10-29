@@ -20,28 +20,36 @@
 
 using namespace saivs;
 
-#define MACSEC_ETHER_TYPE (0x88e5)
+MACsecAttr::MACsecAttr()
+{
+    SWSS_LOG_ENTER();
+}
+
+MACsecAttr::~MACsecAttr()
+{
+    SWSS_LOG_ENTER();
+}
+
 #define EAPOL_ETHER_TYPE (0x888e)
 #define MAC_ADDRESS_SIZE (6)
 #define ETH_FRAME_BUFFER_SIZE (0x4000)
 
 MACsecForwarder::MACsecForwarder(
-    const std::string &macsec_interface_name,
-    int tapfd,
-    int vethfd) : m_tapfd(tapfd),
-                  m_vethfd(vethfd),
-                  m_macsec_interface_name(macsec_interface_name),
-                  m_run_thread(true)
+    _In_ const std::string &macsec_interface_name,
+    _In_ int tapfd):
+    m_tapfd(tapfd),
+    m_macsec_interface_name(macsec_interface_name),
+    m_run_thread(true)
 {
     SWSS_LOG_ENTER();
 
     m_macsecfd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
     if (m_macsecfd < 0)
     {
-        const std::string error_msg =
-            "failed to open macsec socket " + m_macsec_interface_name + ", errno: " + std::to_string(errno);
-        SWSS_LOG_ERROR("%s", error_msg.c_str());
-        throw std::system_error(errno, std::generic_category(), error_msg);
+        SWSS_LOG_THROW(
+            "failed to open macsec socket %s, errno: %d",
+            m_macsec_interface_name.c_str(),
+            errno);
     }
 
     struct sockaddr_ll sock_address;
@@ -51,20 +59,18 @@ MACsecForwarder::MACsecForwarder(
     sock_address.sll_ifindex = if_nametoindex(m_macsec_interface_name.c_str());
     if (sock_address.sll_ifindex == 0)
     {
-        const std::string error_msg =
-            "failed to get interface index for" + m_macsec_interface_name;
-        SWSS_LOG_ERROR("%s", error_msg);
         close(m_macsecfd);
-        throw std::runtime_error(error_msg);
+        SWSS_LOG_THROW(
+            "failed to get interface index for %s",
+            m_macsec_interface_name.c_str());
     }
 
     if (SwitchStateBase::promisc(m_macsec_interface_name.c_str()))
     {
-        const std::string error_msg =
-            "promisc failed on " + m_macsec_interface_name;
-        SWSS_LOG_ERROR("%s", error_msg);
         close(m_macsecfd);
-        throw std::runtime_error(error_msg);
+        SWSS_LOG_THROW(
+            "promisc failed on %s",
+            m_macsec_interface_name.c_str());
     }
 
     if (bind(
@@ -72,11 +78,10 @@ MACsecForwarder::MACsecForwarder(
             (struct sockaddr *)&sock_address,
             sizeof(sock_address)) < 0)
     {
-        const std::string error_msg =
-            "bind failed on " + m_macsec_interface_name;
-        SWSS_LOG_ERROR("%s", error_msg);
         close(m_macsecfd);
-        throw std::runtime_error(error_msg);
+        SWSS_LOG_THROW(
+            "bind failed on %s",
+            m_macsec_interface_name.c_str());
     }
 
     m_forward_thread =
@@ -145,12 +150,14 @@ void MACsecForwarder::forward()
 
         if (size < 0)
         {
+
             SWSS_LOG_WARN(
                 "failed to read from macsec device %s fd %d, errno(%d): %s",
                 m_macsec_interface_name.c_str(),
                 m_macsecfd,
                 errno,
                 strerror(errno));
+
             if (errno == EBADF)
             {
                 // bad file descriptor, just close the thread
@@ -159,16 +166,13 @@ void MACsecForwarder::forward()
                     m_macsec_interface_name.c_str());
                 return;
             }
+
             continue;
         }
-        auto mac_hdr = static_cast<ethhdr *>(
-            static_cast<void *>(buffer));
-        int forward_fd =
-            ntohs(mac_hdr->h_proto) == MACSEC_ETHER_TYPE
-                ? m_vethfd
-                : m_tapfd;
-        if (write(forward_fd, buffer, static_cast<int>(size)) < 0)
+
+        if (write(m_tapfd, buffer, static_cast<int>(size)) < 0)
         {
+
             if (errno != ENETDOWN && errno != EIO)
             {
                 SWSS_LOG_ERROR(
@@ -178,6 +182,7 @@ void MACsecForwarder::forward()
                     errno,
                     strerror(errno));
             }
+
             if (errno == EBADF)
             {
                 // bad file descriptor, just end thread
@@ -189,23 +194,27 @@ void MACsecForwarder::forward()
             }
             continue;
         }
+
     }
+
     SWSS_LOG_NOTICE(
         "ending thread proc for %s",
         m_macsec_interface_name.c_str());
 }
 
 MACsecFilter::MACsecFilter(
-    const std::string &macsec_interface_name,
-    int macsecfd) : m_macsecfd(macsecfd),
-                    m_macsec_interface_name(macsec_interface_name)
+    _In_ const std::string &macsec_interface_name,
+    _In_ int macsecfd):
+    m_macsecfd(macsecfd),
+    m_macsec_interface_name(macsec_interface_name)
 {
     SWSS_LOG_ENTER();
+    // Create MACsec Filter instance
 }
 
 TrafficFilter::FilterStatus MACsecFilter::execute(
-    void *buffer,
-    ssize_t &length)
+    _Inout_ void *buffer,
+    _Inout_ ssize_t &length)
 {
     SWSS_LOG_ENTER();
 
@@ -221,15 +230,20 @@ TrafficFilter::FilterStatus MACsecFilter::execute(
 }
 
 MACsecEgressFilter::MACsecEgressFilter(
-    const std::string &macsec_interface_name,
-    int macsecfd) : MACsecFilter(macsec_interface_name, macsecfd)
+    _In_ const std::string &macsec_interface_name,
+    _In_ int macsecfd):
+    MACsecFilter(macsec_interface_name, macsecfd)
 {
+    SWSS_LOG_ENTER();
+    // Create MACsec Egress Filter instance
 }
 
 TrafficFilter::FilterStatus MACsecEgressFilter::forward(
-    void *buffer,
-    ssize_t &length)
+    _In_ const void *buffer,
+    _In_ ssize_t length)
 {
+    SWSS_LOG_ENTER();
+
     if (write(m_macsecfd, buffer, length) < 0)
     {
         if (errno != ENETDOWN && errno != EIO)
@@ -251,25 +265,31 @@ TrafficFilter::FilterStatus MACsecEgressFilter::forward(
             return TrafficFilter::ERROR;
         }
     }
+
     return TrafficFilter::TERMINATE;
 }
 
 MACsecIngressFilter::MACsecIngressFilter(
-    const std::string &macsec_interface_name,
-    int macsecfd) : MACsecFilter(macsec_interface_name, macsecfd)
+    _In_ const std::string &macsec_interface_name,
+    _In_ int macsecfd):
+    MACsecFilter(macsec_interface_name, macsecfd)
 {
+    SWSS_LOG_ENTER();
+    // Create MACsec Ingress Filter
 }
 
 TrafficFilter::FilterStatus MACsecIngressFilter::forward(
-    void *buffer,
-    ssize_t &length)
+    _In_ const void *buffer,
+    _In_ ssize_t length)
 {
+    SWSS_LOG_ENTER();
+
     return TrafficFilter::TERMINATE;
 }
 
 bool MACsecManager::add_macsec_manager(
-    const std::string &macsec_interface,
-    std::shared_ptr<HostInterfaceInfo> info)
+    _In_ const std::string &macsec_interface,
+    _In_ std::shared_ptr<HostInterfaceInfo> info)
 {
     SWSS_LOG_ENTER();
 
@@ -289,8 +309,7 @@ bool MACsecManager::add_macsec_manager(
     manager.m_forwarder.reset(
         new MACsecForwarder(
             macsec_interface,
-            manager.m_info->m_tapfd,
-            manager.m_info->m_packet_socket));
+            manager.m_info->m_tapfd));
     manager.m_ingress_filter.reset(
         new MACsecIngressFilter(
             macsec_interface,
@@ -305,10 +324,12 @@ bool MACsecManager::add_macsec_manager(
     manager.m_info->installTap2EthFilter(
         FilterPriority::MACSEC_FILTER,
         manager.m_egress_filter);
+
     return true;
 }
 
-bool MACsecManager::delete_macsec_traffic_manager(const std::string &macsec_interface)
+bool MACsecManager::delete_macsec_traffic_manager(
+    _In_ const std::string &macsec_interface)
 {
     SWSS_LOG_ENTER();
 
@@ -324,15 +345,18 @@ bool MACsecManager::delete_macsec_traffic_manager(const std::string &macsec_inte
     manager.m_info->uninstallEth2TapFilter(manager.m_ingress_filter);
     manager.m_info->uninstallTap2EthFilter(manager.m_egress_filter);
     m_macsec_traffic_managers.erase(itr);
+
     return true;
 }
 
+// Query MACsec session
+// $ ip macsec show <MACSEC_NAME>
 bool MACsecManager::get_macsec_device_info(
-    const std::string &macsec_device,
-    std::string &info)
+    _In_ const std::string &macsec_device,
+    _Out_ std::string &info)
 {
-    // $ ip macsec show <MACSEC_NAME>
     SWSS_LOG_ENTER();
+
     std::ostringstream ostream;
     ostream
         << "ip macsec show "
@@ -341,20 +365,24 @@ bool MACsecManager::get_macsec_device_info(
     return exec(ostream.str(), info);
 }
 
-bool MACsecManager::is_macsec_device_existing(const std::string &macsec_device)
+bool MACsecManager::is_macsec_device_existing(
+    _In_ const std::string &macsec_device)
 {
     SWSS_LOG_ENTER();
     std::string macsec_info;
     return get_macsec_device_info(macsec_device, macsec_info);
 }
 
-std::string MACsecManager::shellquote(const std::string &str)
+std::string MACsecManager::shellquote(
+    _In_ const std::string &str)
 {
     static const std::regex re("([$`\"\\\n])");
     return "\"" + std::regex_replace(str, re, "\\$1") + "\"";
 }
 
-bool MACsecManager::exec(const std::string &command, std::string &output)
+bool MACsecManager::exec(
+    _In_ const std::string &command,
+    _Out_ std::string &output)
 {
     SWSS_LOG_ENTER();
 
@@ -366,7 +394,8 @@ bool MACsecManager::exec(const std::string &command, std::string &output)
     return true;
 }
 
-bool MACsecManager::exec(const std::string &command)
+bool MACsecManager::exec(
+    _In_ const std::string &command)
 {
     SWSS_LOG_ENTER();
 
@@ -374,12 +403,14 @@ bool MACsecManager::exec(const std::string &command)
     return exec(command, res);
 }
 
-bool MACsecManager::create_macsec_port(const MACsecAttr &attr)
+// Create MACsec Port
+// $ ip link add link <VETH_NAME> name <MACSEC_NAME> type macsec sci <SCI>
+// $ ip link set dev <MACSEC_NAME> up
+bool MACsecManager::create_macsec_port(
+    _In_ const MACsecAttr &attr)
 {
-    // Create MACsec Port
-    // $ ip link add link <VETH_NAME> name <MACSEC_NAME> type macsec sci <SCI>
-    // $ ip link set dev <MACSEC_NAME> up
     SWSS_LOG_ENTER();
+
     std::ostringstream ostream;
     ostream
         << "ip link add link "
@@ -398,15 +429,18 @@ bool MACsecManager::create_macsec_port(const MACsecAttr &attr)
     {
         return false;
     }
+
     return add_macsec_manager(attr.m_macsec_name, attr.m_info);
 }
 
-bool MACsecManager::create_macsec_egress_sa(const MACsecAttr &attr)
+// Create MACsec Egress SA
+// $ ip macsec add <MACSEC_NAME> tx sa <AN> pn <PN> on key <AUTH_KEY> <SAK> &&
+// ip link set link <VETH_NAME> name <MACSEC_NAME> type macsec encodingsa <AN>
+bool MACsecManager::create_macsec_egress_sa(
+    _In_ const MACsecAttr &attr)
 {
-    // Create MACsec Egress SA
-    // $ ip macsec add <MACSEC_NAME> tx sa <AN> pn <PN> on key <AUTH_KEY> <SAK> &&
-    // ip link set link <VETH_NAME> name <MACSEC_NAME> type macsec encodingsa <AN>
     SWSS_LOG_ENTER();
+
     std::ostringstream ostream;
     ostream
         << "ip macsec add "
@@ -426,14 +460,17 @@ bool MACsecManager::create_macsec_egress_sa(const MACsecAttr &attr)
         << " type macsec encodingsa "
         << attr.m_an;
     SWSS_LOG_NOTICE("%s", ostream.str().c_str());
+
     return exec(ostream.str());
 }
 
-bool MACsecManager::create_macsec_ingress_sc(const MACsecAttr &attr)
+// Create MACsec Ingress SC
+// $ ip macsec add <MACSEC_NAME> rx sci <SCI>
+bool MACsecManager::create_macsec_ingress_sc(
+    _In_ const MACsecAttr &attr)
 {
-    // Create MACsec Ingress SC
-    // $ ip macsec add <MACSEC_NAME> rx sci <SCI>
     SWSS_LOG_ENTER();
+
     std::ostringstream ostream;
     ostream
         << "ip macsec add "
@@ -442,14 +479,17 @@ bool MACsecManager::create_macsec_ingress_sc(const MACsecAttr &attr)
         << attr.m_sci
         << " on";
     SWSS_LOG_NOTICE("%s", ostream.str().c_str());
+
     return exec(ostream.str());
 }
 
-bool MACsecManager::create_macsec_ingress_sa(const MACsecAttr &attr)
+// Create MACsec Ingress SA
+// $ ip macsec add <MACSEC_NAME> rx sci <SCI> sa <SA> pn <PN> on key <AUTH_KEY> <SAK>
+bool MACsecManager::create_macsec_ingress_sa(
+    _In_ const MACsecAttr &attr)
 {
-    // Create MACsec Ingress SA
-    // $ ip macsec add <MACSEC_NAME> rx sci <SCI> sa <SA> pn <PN> on key <AUTH_KEY> <SAK>
     SWSS_LOG_ENTER();
+
     std::ostringstream ostream;
     ostream
         << "ip macsec add "
@@ -465,10 +505,12 @@ bool MACsecManager::create_macsec_ingress_sa(const MACsecAttr &attr)
         << " "
         << attr.m_sak;
     SWSS_LOG_NOTICE("%s", ostream.str().c_str());
+
     return exec(ostream.str());
 }
 
-bool MACsecManager::enable_macsec(const MACsecAttr &attr)
+bool MACsecManager::enable_macsec(
+    _In_ const MACsecAttr &attr)
 {
     SWSS_LOG_ENTER();
 
@@ -482,14 +524,17 @@ bool MACsecManager::enable_macsec(const MACsecAttr &attr)
         create_macsec_ingress_sc(attr);
         create_macsec_ingress_sa(attr);
     }
+
     return true;
 }
 
-bool MACsecManager::delete_macsec_port(const MACsecAttr &attr)
+// Delete MACsec Port
+// $ ip link del link <VETH_NAME> name <MACSEC_NAME> type macsec
+bool MACsecManager::delete_macsec_port(
+    _In_ const MACsecAttr &attr)
 {
-    // Delete MACsec Port
-    // $ ip link del link <VETH_NAME> name <MACSEC_NAME> type macsec
     SWSS_LOG_ENTER();
+
     if (!is_macsec_device_existing(attr.m_macsec_name))
     {
         // This macsec device has been deleted
@@ -507,15 +552,18 @@ bool MACsecManager::delete_macsec_port(const MACsecAttr &attr)
     {
         return false;
     }
+
     return delete_macsec_traffic_manager(attr.m_macsec_name);
 }
 
-bool MACsecManager::delete_macsec_egress_sa(const MACsecAttr &attr)
+// Delete MACsec Egress SA
+// $ ip macsec set <MACSEC_NAME> tx sa 0 off
+// $ ip macsec del <MACSEC_NAME> tx sa 0
+bool MACsecManager::delete_macsec_egress_sa(
+    _In_ const MACsecAttr &attr)
 {
-    // Delete MACsec Egress SA
-    // $ ip macsec set <MACSEC_NAME> tx sa 0 off
-    // $ ip macsec del <MACSEC_NAME> tx sa 0
     SWSS_LOG_ENTER();
+
     std::ostringstream ostream;
     ostream
         << "ip macsec set "
@@ -529,15 +577,18 @@ bool MACsecManager::delete_macsec_egress_sa(const MACsecAttr &attr)
         << attr.m_an
         ;
     SWSS_LOG_NOTICE("%s", ostream.str().c_str());
+
     return exec(ostream.str());
 }
 
-bool MACsecManager::delete_macsec_ingress_sc(const MACsecAttr &attr)
+// Delete MACsec Ingress SC
+// $ ip macsec set <MACSEC_NAME> rx sci <SCI> off
+// $ ip macsec del <MACSEC_NAME> rx sci <SCI>
+bool MACsecManager::delete_macsec_ingress_sc(
+    _In_ const MACsecAttr &attr)
 {
-    // Delete MACsec Ingress SC
-    // $ ip macsec set <MACSEC_NAME> rx sci <SCI> off
-    // $ ip macsec del <MACSEC_NAME> rx sci <SCI>
     SWSS_LOG_ENTER();
+
     std::ostringstream ostream;
     ostream
         << "ip macsec add "
@@ -550,15 +601,18 @@ bool MACsecManager::delete_macsec_ingress_sc(const MACsecAttr &attr)
         << " rx sci "
         << attr.m_sci;
     SWSS_LOG_NOTICE("%s", ostream.str().c_str());
+
     return exec(ostream.str());
 }
 
-bool MACsecManager::delete_macsec_ingress_sa(const MACsecAttr &attr)
+// Delete MACsec Ingress SA
+// $ ip macsec set <MACSEC_NAME> rx sci <SCI> sa <SA> off
+// $ ip macsec del <MACSEC_NAME> rx sci <SCI> sa <SA>
+bool MACsecManager::delete_macsec_ingress_sa(
+    _In_ const MACsecAttr &attr)
 {
-    // Delete MACsec Ingress SA
-    // $ ip macsec set <MACSEC_NAME> rx sci <SCI> sa <SA> off
-    // $ ip macsec del <MACSEC_NAME> rx sci <SCI> sa <SA>
     SWSS_LOG_ENTER();
+
     std::ostringstream ostream;
     ostream
         << "ip macsec set "
@@ -575,13 +629,16 @@ bool MACsecManager::delete_macsec_ingress_sa(const MACsecAttr &attr)
         << " sa "
         << attr.m_an;
     SWSS_LOG_NOTICE("%s", ostream.str().c_str());
+
     return exec(ostream.str());
 }
 
-bool MACsecManager::get_macsec_sa_pn(const MACsecAttr &attr, sai_uint64_t &pn)
+bool MACsecManager::get_macsec_sa_pn(
+    _In_ const MACsecAttr &attr,
+    _Out_ sai_uint64_t &pn)
 {
-    // $ ip macsec show <MACSEC_NAME>
     SWSS_LOG_ENTER();
+
     pn = 1;
 
     std::string macsec_info;
@@ -598,6 +655,7 @@ bool MACsecManager::get_macsec_sa_pn(const MACsecAttr &attr, sai_uint64_t &pn)
     {
         direction = "RXSC";
     }
+
     // Here is an example for "ip macsec show xxxx"
     // cipher suite: GCM-AES-128, using ICV length 16
     // TXSC: fe5400bd9b360001 on SA 0
@@ -636,5 +694,6 @@ bool MACsecManager::get_macsec_sa_pn(const MACsecAttr &attr, sai_uint64_t &pn)
             attr.m_sci.c_str(),
             attr.m_an);
     }
+
     return true;
 }

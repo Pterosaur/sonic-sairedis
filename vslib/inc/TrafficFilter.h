@@ -1,5 +1,7 @@
 #pragma once
 
+#include <swss/sal.h>
+
 #include <memory>
 #include <map>
 #include <mutex>
@@ -21,9 +23,10 @@ class TrafficFilter
         TERMINATE,
         ERROR,
     };
+
     virtual FilterStatus execute(
-        void *buffer,
-        ssize_t &length) = 0;
+        _Inout_ void *buffer,
+        _Inout_ ssize_t &length) = 0;
 };
 
 // TODO : To use RCU strategy to update filter pipes
@@ -32,17 +35,22 @@ class TrafficFilterPipes
  public:
 
     TrafficFilterPipes() = default;
+
     ~TrafficFilterPipes() = default;
 
     bool installFilter(
-        int priority,
-        std::shared_ptr<TrafficFilter> filter);
+        _In_ int priority,
+        _In_ std::shared_ptr<TrafficFilter> filter);
 
-    bool uninstallFilter(std::shared_ptr<TrafficFilter> filter);
+    bool uninstallFilter(
+        _In_ std::shared_ptr<TrafficFilter> filter);
 
-    TrafficFilter::FilterStatus execute(void *buffer, ssize_t &length);
+    TrafficFilter::FilterStatus execute(
+        _Inout_ void *buffer,
+        _Inout_ ssize_t &length);
 
  private:
+
     typedef std::map<int, std::shared_ptr<TrafficFilter> > FilterPriorityQueue;
     std::mutex m_mutex;
     FilterPriorityQueue m_filters;

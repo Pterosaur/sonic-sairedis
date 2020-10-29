@@ -107,7 +107,7 @@ FlexCounter::BufferPoolCounterIds::BufferPoolCounterIds(
 FlexCounter::MACsecSAAttrIds::MACsecSAAttrIds(
         _In_ sai_object_id_t macsecSA,
         _In_ const std::vector<sai_macsec_sa_attr_t> &macsecSAIds):
-        macsecSAId(macsecSA), macsecSAAttrIds(macsecSAIds)
+        m_macsecSAId(macsecSA), m_macsecSAAttrIds(macsecSAIds)
 {
     SWSS_LOG_ENTER();
 }
@@ -456,7 +456,7 @@ void FlexCounter::setMACsecSAAttrList(
 
     if (it != m_macsecSAAttrIdsMap.end())
     {
-        it->second->macsecSAAttrIds = attrIds;
+        it->second->m_macsecSAAttrIds = attrIds;
         return;
     }
 
@@ -1426,8 +1426,8 @@ void FlexCounter::collectMACsecSAAttrs(
     for (const auto &kv: m_macsecSAAttrIdsMap)
     {
         const auto &macsecSAVid = kv.first;
-        const auto &macsecSARid = kv.second->macsecSAId;
-        const auto &macsecSAAttrIds = kv.second->macsecSAAttrIds;
+        const auto &macsecSARid = kv.second->m_macsecSAId;
+        const auto &macsecSAAttrIds = kv.second->m_macsecSAAttrIds;
 
         std::vector<sai_attribute_t> macsecSAAttr(macsecSAAttrIds.size());
 
@@ -1454,7 +1454,7 @@ void FlexCounter::collectMACsecSAAttrs(
 
         for (size_t i = 0; i != macsecSAAttrIds.size(); i++)
         {
-            const std::string &attrName = sai_serialize_macsec_sa_attr(macsecSAAttrIds[i]);
+            const std::string &attrName = sai_serialize_enum(macsecSAAttrIds[i], &sai_metadata_enum_sai_macsec_sa_attr_t);
             auto meta = sai_metadata_get_attr_metadata(SAI_OBJECT_TYPE_MACSEC_SA, macsecSAAttr[i].id);
             values.emplace_back(attrName, sai_serialize_attr_value(*meta, macsecSAAttr[i]));
         }
@@ -2230,9 +2230,9 @@ void FlexCounter::addCounter(
 
             for (const auto &str : idStrings)
             {
-                sai_macsec_sa_attr_t attr;
-                sai_deserialize_macsec_sa_attr(str.c_str(), attr);
-                MACsecSAIds.push_back(attr);
+                int32_t attr;
+                sai_deserialize_enum(str, &sai_metadata_enum_sai_macsec_sa_attr_t, attr);
+                MACsecSAIds.push_back(static_cast<sai_macsec_sa_attr_t>(attr));
             }
 
             setMACsecSAAttrList(vid, rid, MACsecSAIds);
