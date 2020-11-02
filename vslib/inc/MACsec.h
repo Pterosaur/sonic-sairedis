@@ -114,8 +114,8 @@ namespace saivs
     class MACsecManager
     {
     public:
-        MACsecManager() = default;
-        ~MACsecManager() = default;
+        MACsecManager();
+        ~MACsecManager();
 
         bool create_macsec_port(
             _In_ const MACsecAttr &attr);
@@ -190,6 +190,8 @@ namespace saivs
             _In_ sai_int32_t direction,
             _In_ const std::string &sci,
             _In_ macsec_an_t an);
+
+        void cleanup_macsec_device();
 
         std::string shellquote(
             _In_ const std::string &str);

@@ -303,6 +303,16 @@ TrafficFilter::FilterStatus MACsecIngressFilter::forward(
     return TrafficFilter::TERMINATE;
 }
 
+MACsecManager::MACsecManager()
+{
+    cleanup_macsec_device();
+}
+
+MACsecManager::~MACsecManager()
+{
+    cleanup_macsec_device();
+}
+
 // Create MACsec Port
 // $ ip link add link <VETH_NAME> name <MACSEC_NAME> type macsec sci <SCI>
 // $ ip link set dev <MACSEC_NAME> up
@@ -948,6 +958,49 @@ bool MACsecManager::is_macsec_sa_existing(
         sci,
         an,
         macsec_sa_info);
+}
+
+void MACsecManager::cleanup_macsec_device()
+{
+    SWSS_LOG_ENTER();
+
+    std::string macsec_infos;
+
+    if (!exec("ip macsec show", macsec_infos))
+    {
+        SWSS_LOG_THROW("Cannot show MACsec ports");
+    }
+
+    // Here is an example of MACsec device informations
+    // 2774: macsec0: protect on validate strict sc off sa off encrypt on send_sci on end_station off scb off replay on window 0
+    //     cipher suite: GCM-AES-128, using ICV length 16
+    //     TXSC: fe5400409b920001 on SA 0
+    // 2775: macsec1: protect on validate strict sc off sa off encrypt on send_sci on end_station off scb off replay on window 0
+    //     cipher suite: GCM-AES-128, using ICV length 16
+    //     TXSC: fe5400409b920001 on SA 0
+    // 2776: macsec2: protect on validate strict sc off sa off encrypt on send_sci on end_station off scb off replay on window 0
+    //     cipher suite: GCM-AES-128, using ICV length 16
+    //     TXSC: fe5400409b920001 on SA 0
+    // Use pattern : '^\d+:\s*(\w+):' to extract all MACsec interface names
+    const std::regex pattern("^\\d+:\\s*(\\w+):");
+    std::smatch matches;
+    std::string::const_iterator search_pos(macsec_infos.cbegin());
+
+    while(std::regex_search(search_pos, macsec_infos.cend(), matches, pattern))
+    {
+        std::ostringstream ostream;
+        ostream
+            << "ip link del "
+            << matches[1].str();
+        if (!exec(ostream.str()))
+        {
+            SWSS_LOG_WARN(
+                "Cannot cleanup MACsec interface %s",
+                matches[1].str().c_str());
+        }
+        search_pos = matches.suffix().first;
+    }
+
 }
 
 std::string MACsecManager::shellquote(
