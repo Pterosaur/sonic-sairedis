@@ -900,7 +900,7 @@ bool MACsecManager::get_macsec_sa_info(
     {
 
         SWSS_LOG_WARN(
-            "The MACsec SC %s at the device is nonexisting.",
+            "The MACsec SC %s at the device %s is nonexisting.",
             sci.c_str(),
             macsec_device.c_str());
 
