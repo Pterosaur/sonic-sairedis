@@ -60,13 +60,13 @@ sai_status_t SwitchStateBase::setAclEntryMACsecFlowActive(
         {
             for (auto &macsec_attr : macsec_attrs)
             {
-                if (m_macsecManager.enable_macsec(macsec_attr))
+                if (m_macsecManager.create_macsec_sa(macsec_attr))
                 {
                     SWSS_LOG_NOTICE(
-                        "Enable MACsec SA %s %s %u",
-                        macsec_attr.m_macsec_name.c_str(),
+                        "Enable MACsec SA %s:%u at the device %s",
                         macsec_attr.m_sci.c_str(),
-                        macsec_attr.m_an);
+                        static_cast<std::uint32_t>(macsec_attr.m_an),
+                        macsec_attr.m_macsec_name.c_str());
                 }
             }
         }
@@ -143,18 +143,47 @@ sai_status_t SwitchStateBase::createMACsecSA(
             attr_list,
             macsec_attr) == SAI_STATUS_SUCCESS)
     {
-        if (m_macsecManager.enable_macsec(macsec_attr))
+        if (m_macsecManager.create_macsec_sa(macsec_attr))
         {
             SWSS_LOG_NOTICE(
-                "Enable MACsec SA %s %s %u",
-                macsec_attr.m_macsec_name.c_str(),
+                "Enable MACsec SA %s:%u at the device %s",
                 macsec_attr.m_sci.c_str(),
-                macsec_attr.m_an);
+                static_cast<std::uint32_t>(macsec_attr.m_an),
+                macsec_attr.m_macsec_name.c_str());
         }
     }
 
     auto sid = sai_serialize_object_id(macsec_sa_id);
     return create_internal(SAI_OBJECT_TYPE_MACSEC_SA, sid, switch_id, attr_count, attr_list);
+}
+
+sai_status_t SwitchStateBase::createMACsecSC(
+    _In_ sai_object_id_t macsec_sc_id,
+    _In_ sai_object_id_t switch_id,
+    _In_ uint32_t attr_count,
+    _In_ const sai_attribute_t *attr_list)
+{
+    SWSS_LOG_ENTER();
+
+    MACsecAttr macsec_attr;
+    if (loadMACsecAttr(
+            SAI_OBJECT_TYPE_MACSEC_SC,
+            macsec_sc_id,
+            attr_count,
+            attr_list,
+            macsec_attr) == SAI_STATUS_SUCCESS)
+    {
+        if (m_macsecManager.create_macsec_sc(macsec_attr))
+        {
+            SWSS_LOG_NOTICE(
+                "Create MACsec SC %s at the device %s",
+                macsec_attr.m_sci.c_str(),
+                macsec_attr.m_macsec_name.c_str());
+        }
+    }
+
+    auto sid = sai_serialize_object_id(macsec_sc_id);
+    return create_internal(SAI_OBJECT_TYPE_MACSEC_SC, sid, switch_id, attr_count, attr_list);
 }
 
 sai_status_t SwitchStateBase::removeMACsecPort(

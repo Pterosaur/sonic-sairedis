@@ -446,6 +446,12 @@ namespace saivs
                     _In_ uint32_t attr_count,
                     _In_ const sai_attribute_t *attr_list);
 
+            sai_status_t createMACsecSC(
+                    _In_ sai_object_id_t macsec_sa_id,
+                    _In_ sai_object_id_t switch_id,
+                    _In_ uint32_t attr_count,
+                    _In_ const sai_attribute_t *attr_list);
+
             sai_status_t removeMACsecPort(
                     _In_ sai_object_id_t macsec_port_id);
 

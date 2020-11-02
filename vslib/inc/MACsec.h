@@ -123,13 +123,16 @@ namespace saivs
         bool create_macsec_egress_sa(
             _In_ const MACsecAttr &attr);
 
+        bool create_macsec_sc(
+            _In_ const MACsecAttr &attr);
+
         bool create_macsec_ingress_sc(
             _In_ const MACsecAttr &attr);
 
         bool create_macsec_ingress_sa(
             _In_ const MACsecAttr &attr);
 
-        bool enable_macsec(
+        bool create_macsec_sa(
             _In_ const MACsecAttr &attr);
 
         bool delete_macsec_port(

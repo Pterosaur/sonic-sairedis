@@ -306,6 +306,7 @@ TrafficFilter::FilterStatus MACsecIngressFilter::forward(
 // Create MACsec Port
 // $ ip link add link <VETH_NAME> name <MACSEC_NAME> type macsec sci <SCI>
 // $ ip link set dev <MACSEC_NAME> up
+// MACsec egress SC will be automatically create when the MACsec port is created
 bool MACsecManager::create_macsec_port(
     _In_ const MACsecAttr &attr)
 {
@@ -355,6 +356,14 @@ bool MACsecManager::create_macsec_egress_sa(
         return true;
     }
 
+    if (!create_macsec_port(attr))
+    {
+        SWSS_LOG_WARN(
+            "Cannot create MACsec device %s",
+            attr.m_macsec_name.c_str());
+        return false;
+    }
+
     std::ostringstream ostream;
     ostream
         << "ip macsec add "
@@ -376,6 +385,34 @@ bool MACsecManager::create_macsec_egress_sa(
     SWSS_LOG_NOTICE("%s", ostream.str().c_str());
 
     return exec(ostream.str());
+}
+
+bool MACsecManager::create_macsec_sc(
+    _In_ const MACsecAttr &attr)
+{
+    if (attr.m_direction == SAI_MACSEC_DIRECTION_EGRESS)
+    {
+        if (!create_macsec_port(attr))
+        {
+            SWSS_LOG_WARN(
+                "Cannot create MACsec egress SC %s at the device %s",
+                attr.m_sci.c_str(),
+                attr.m_macsec_name.c_str());
+            return false;
+        }
+    }
+    else
+    {
+        if (!create_macsec_ingress_sc(attr))
+        {
+            SWSS_LOG_WARN(
+                "Cannot create MACsec ingress SC %s at the device %s",
+                attr.m_sci.c_str(),
+                attr.m_macsec_name.c_str());
+            return false;
+        }
+    }
+    return true;
 }
 
 // Create MACsec Ingress SC
@@ -421,6 +458,15 @@ bool MACsecManager::create_macsec_ingress_sa(
         return true;
     }
 
+    if (!create_macsec_ingress_sc(attr))
+    {
+        SWSS_LOG_WARN(
+            "Cannot create MACsec ingress SC %s at the device %s.",
+            attr.m_sci.c_str(),
+            attr.m_macsec_name.c_str());
+        return false;
+    }
+
     std::ostringstream ostream;
     ostream
         << "ip macsec add "
@@ -440,18 +486,10 @@ bool MACsecManager::create_macsec_ingress_sa(
     return exec(ostream.str());
 }
 
-bool MACsecManager::enable_macsec(
+bool MACsecManager::create_macsec_sa(
     _In_ const MACsecAttr &attr)
 {
     SWSS_LOG_ENTER();
-
-    if (!create_macsec_port(attr))
-    {
-        SWSS_LOG_WARN(
-            "Cannot create MACsec device %s",
-            attr.m_macsec_name.c_str());
-        return false;
-    }
 
     if (attr.m_direction == SAI_MACSEC_DIRECTION_EGRESS)
     {
@@ -469,15 +507,6 @@ bool MACsecManager::enable_macsec(
     }
     else
     {
-
-        if (!create_macsec_ingress_sc(attr))
-        {
-            SWSS_LOG_WARN(
-                "Cannot create MACsec ingress SC %s at the device %s.",
-                attr.m_sci.c_str(),
-                attr.m_macsec_name.c_str());
-            return false;
-        }
 
         if (!create_macsec_ingress_sa(attr))
         {
