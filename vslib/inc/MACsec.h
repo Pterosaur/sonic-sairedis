@@ -164,6 +164,40 @@ namespace saivs
         bool is_macsec_device_existing(
             _In_ const std::string &macsec_device);
 
+        bool get_macsec_sc_info(
+            _In_ const std::string &macsec_device,
+            _In_ sai_int32_t direction,
+            _In_ const std::string &sci,
+            _Out_ std::string &info);
+
+        bool is_macsec_sc_existing(
+            _In_ const std::string &macsec_device,
+            _In_ sai_int32_t direction,
+            _In_ const std::string &sci);
+
+        bool get_macsec_sa_info(
+            _In_ const std::string &macsec_device,
+            _In_ sai_int32_t direction,
+            _In_ const std::string &sci,
+            _In_ macsec_an_t an,
+            _Out_ std::string &info);
+
+        bool is_macsec_sa_existing(
+            _In_ const std::string &macsec_device,
+            _In_ sai_int32_t direction,
+            _In_ const std::string &sci,
+            _In_ macsec_an_t an);
+
+        std::string shellquote(
+            _In_ const std::string &str);
+
+        bool exec(
+            _In_ const std::string &command,
+            _Out_ std::string &output);
+
+        bool exec(
+            _In_ const std::string &command);
+
         struct MACsecTrafficManager
         {
             std::shared_ptr<HostInterfaceInfo> m_info;
@@ -177,16 +211,6 @@ namespace saivs
         };
 
         std::map<std::string, MACsecTrafficManager> m_macsec_traffic_managers;
-
-        std::string shellquote(
-            _In_ const std::string &str);
-
-        bool exec(
-            _In_ const std::string &command,
-            _Out_ std::string &output);
-
-        bool exec(
-            _In_ const std::string &command);
 
     };
 
