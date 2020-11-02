@@ -656,7 +656,8 @@ bool MACsecManager::get_macsec_sa_pn(
 
     if (std::regex_search(macsec_sa_info, matches, pattern))
     {
-        if (matches.size() != 1)
+
+        if (matches.size() != 2)
         {
             SWSS_LOG_ERROR(
                 "Wrong match result %s in %s",
@@ -664,6 +665,7 @@ bool MACsecManager::get_macsec_sa_pn(
                 macsec_sa_info.c_str());
             return false;
         }
+
         std::istringstream iss(matches[1].str());
         iss >> pn;
         return true;

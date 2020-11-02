@@ -239,7 +239,7 @@ sai_status_t SwitchStateBase::removeMACsecSA(
 
         if (ret)
         {
-            SWSS_LOG_WARN(
+            SWSS_LOG_NOTICE(
                 "The MACsec SA %s:%u at the device %s is deleted.",
                 macsec_attr.m_sci.c_str(),
                 static_cast<std::uint32_t>(macsec_attr.m_an),
