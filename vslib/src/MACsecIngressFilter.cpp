@@ -25,7 +25,7 @@ TrafficFilter::FilterStatus MACsecIngressFilter::forward(
 
     // MACsec interface will automatically forward ingress MACsec traffic
     // by Linux Kernel.
-    // So this filter just need to drop all ingress MACsec traffic directly 
+    // So this filter just need to drop all ingress MACsec traffic directly
 
     return TrafficFilter::TERMINATE;
 }
