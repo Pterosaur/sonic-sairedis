@@ -376,7 +376,7 @@ bool MACsecManager::delete_macsec_ingress_sa(
 
 bool MACsecManager::get_macsec_sa_pn(
     _In_ const MACsecAttr &attr,
-    _Out_ sai_uint64_t &pn)
+    _Out_ sai_uint64_t &pn) const
 {
     SWSS_LOG_ENTER();
 
@@ -502,7 +502,7 @@ bool MACsecManager::delete_macsec_traffic_manager(
 // $ ip macsec show <MACSEC_NAME>
 bool MACsecManager::get_macsec_device_info(
     _In_ const std::string &macsec_device,
-    _Out_ std::string &info)
+    _Out_ std::string &info) const
 {
     SWSS_LOG_ENTER();
 
@@ -515,7 +515,7 @@ bool MACsecManager::get_macsec_device_info(
 }
 
 bool MACsecManager::is_macsec_device_existing(
-    _In_ const std::string &macsec_device)
+    _In_ const std::string &macsec_device) const
 {
     SWSS_LOG_ENTER();
 
@@ -528,7 +528,7 @@ bool MACsecManager::get_macsec_sc_info(
     _In_ const std::string &macsec_device,
     _In_ sai_int32_t direction,
     _In_ const std::string &sci,
-    _Out_ std::string &info)
+    _Out_ std::string &info) const
 {
     SWSS_LOG_ENTER();
 
@@ -587,7 +587,7 @@ bool MACsecManager::get_macsec_sc_info(
 bool MACsecManager::is_macsec_sc_existing(
     _In_ const std::string &macsec_device,
     _In_ sai_int32_t direction,
-    _In_ const std::string &sci)
+    _In_ const std::string &sci) const
 {
     SWSS_LOG_ENTER();
 
@@ -605,7 +605,7 @@ bool MACsecManager::get_macsec_sa_info(
     _In_ sai_int32_t direction,
     _In_ const std::string &sci,
     _In_ macsec_an_t an,
-    _Out_ std::string &info)
+    _Out_ std::string &info) const
 {
     SWSS_LOG_ENTER();
 
@@ -655,7 +655,7 @@ bool MACsecManager::is_macsec_sa_existing(
     _In_ const std::string &macsec_device,
     _In_ sai_int32_t direction,
     _In_ const std::string &sci,
-    _In_ macsec_an_t an)
+    _In_ macsec_an_t an) const
 {
     SWSS_LOG_ENTER();
 
@@ -669,7 +669,7 @@ bool MACsecManager::is_macsec_sa_existing(
         macsec_sa_info);
 }
 
-void MACsecManager::cleanup_macsec_device()
+void MACsecManager::cleanup_macsec_device() const
 {
     SWSS_LOG_ENTER();
 
@@ -713,7 +713,7 @@ void MACsecManager::cleanup_macsec_device()
 }
 
 std::string MACsecManager::shellquote(
-    _In_ const std::string &str)
+    _In_ const std::string &str) const
 {
     SWSS_LOG_ENTER();
 
@@ -724,7 +724,7 @@ std::string MACsecManager::shellquote(
 
 bool MACsecManager::exec(
     _In_ const std::string &command,
-    _Out_ std::string &output)
+    _Out_ std::string &output) const
 {
     SWSS_LOG_ENTER();
 
@@ -738,7 +738,7 @@ bool MACsecManager::exec(
 }
 
 bool MACsecManager::exec(
-    _In_ const std::string &command)
+    _In_ const std::string &command) const
 {
     SWSS_LOG_ENTER();
 

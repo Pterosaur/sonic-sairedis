@@ -45,7 +45,7 @@ namespace saivs
 
         bool get_macsec_sa_pn(
             _In_ const MACsecAttr &attr,
-            _Out_ sai_uint64_t &pn);
+            _Out_ sai_uint64_t &pn) const;
 
     private:
 
@@ -58,46 +58,46 @@ namespace saivs
 
         bool get_macsec_device_info(
             _In_ const std::string &macsec_device,
-            _Out_ std::string &info);
+            _Out_ std::string &info) const;
 
         bool is_macsec_device_existing(
-            _In_ const std::string &macsec_device);
+            _In_ const std::string &macsec_device) const;
 
         bool get_macsec_sc_info(
             _In_ const std::string &macsec_device,
             _In_ sai_int32_t direction,
             _In_ const std::string &sci,
-            _Out_ std::string &info);
+            _Out_ std::string &info) const;
 
         bool is_macsec_sc_existing(
             _In_ const std::string &macsec_device,
             _In_ sai_int32_t direction,
-            _In_ const std::string &sci);
+            _In_ const std::string &sci) const;
 
         bool get_macsec_sa_info(
             _In_ const std::string &macsec_device,
             _In_ sai_int32_t direction,
             _In_ const std::string &sci,
             _In_ macsec_an_t an,
-            _Out_ std::string &info);
+            _Out_ std::string &info) const;
 
         bool is_macsec_sa_existing(
             _In_ const std::string &macsec_device,
             _In_ sai_int32_t direction,
             _In_ const std::string &sci,
-            _In_ macsec_an_t an);
+            _In_ macsec_an_t an) const;
 
-        void cleanup_macsec_device();
+        void cleanup_macsec_device() const;
 
         std::string shellquote(
-            _In_ const std::string &str);
+            _In_ const std::string &str) const;
 
         bool exec(
             _In_ const std::string &command,
-            _Out_ std::string &output);
+            _Out_ std::string &output) const;
 
         bool exec(
-            _In_ const std::string &command);
+            _In_ const std::string &command) const;
 
         struct MACsecTrafficManager
         {

@@ -24,6 +24,7 @@ namespace saivs
     protected:
         int m_macsecfd;
         const std::string m_macsec_interface_name;
+
         virtual FilterStatus forward(
             _In_ const void *buffer,
             _In_ ssize_t length) = 0;
