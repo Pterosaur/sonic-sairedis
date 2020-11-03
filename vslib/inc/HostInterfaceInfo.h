@@ -5,7 +5,7 @@ extern "C" {
 }
 
 #include "EventQueue.h"
-#include "TrafficFilter.h"
+#include "TrafficFilterPipes.h"
 
 #include "swss/selectableevent.h"
 

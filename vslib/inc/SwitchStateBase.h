@@ -7,7 +7,7 @@
 #include "SwitchConfig.h"
 #include "RealObjectIdManager.h"
 #include "EventPayloadNetLinkMsg.h"
-#include "MACsec.h"
+#include "MACsecManager.h"
 
 #include <set>
 #include <unordered_set>

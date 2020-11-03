@@ -1,4 +1,4 @@
-#include "TrafficFilter.h"
+#include "TrafficFilterPipes.h"
 
 #include <swss/logger.h>
 
