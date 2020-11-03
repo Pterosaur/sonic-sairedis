@@ -10,7 +10,6 @@ extern "C" {
 #include "swss/selectableevent.h"
 
 #include <memory>
-#include <map>
 #include <thread>
 #include <string.h>
 
