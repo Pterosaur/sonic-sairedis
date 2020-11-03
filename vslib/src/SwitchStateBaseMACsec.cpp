@@ -321,6 +321,7 @@ sai_status_t SwitchStateBase::findPortByMACsecFlow(
     attr.value.aclaction.enable = true;
     std::vector<sai_object_id_t> acl_entry_ids;
     findObjects(SAI_OBJECT_TYPE_ACL_ENTRY, attr, acl_entry_ids);
+
     if (acl_entry_ids.empty())
     {
         SWSS_LOG_DEBUG(
@@ -329,12 +330,15 @@ sai_status_t SwitchStateBase::findPortByMACsecFlow(
         return SAI_STATUS_FAILURE;
     }
 
+
     // Find ACL Table
     sai_object_id_t acl_table_id = SAI_NULL_OBJECT_ID;
+
     // All entries with same MACsec flow correspond one ACL Table
     // Because an ACL Table corresponds one MACsec Port
     // And a flow never belongs to two MACsec Port
-    if (getACLTable(acl_entry_ids.front(), acl_table_id) != SAI_STATUS_SUCCESS || acl_table_id == SAI_NULL_OBJECT_ID)
+    if (getACLTable(acl_entry_ids.front(), acl_table_id) != SAI_STATUS_SUCCESS
+        || acl_table_id == SAI_NULL_OBJECT_ID)
     {
         SWSS_LOG_ERROR(
             "Cannot find corresponding ACL table for the entry %s",
@@ -342,11 +346,13 @@ sai_status_t SwitchStateBase::findPortByMACsecFlow(
         return SAI_STATUS_FAILURE;
     }
 
+
     // Find MACsec SC
     attr.id = SAI_MACSEC_SC_ATTR_FLOW_ID;
     attr.value.oid = macsec_flow_id;
     std::vector<sai_object_id_t> macsec_sc_ids;
     findObjects(SAI_OBJECT_TYPE_MACSEC_SC, attr, macsec_sc_ids);
+
     // One MACsec SC will only belong to one MACsec flow
     // Meanwhile one MACsec flow will just belong to one port
     if (macsec_sc_ids.empty())
@@ -356,6 +362,7 @@ sai_status_t SwitchStateBase::findPortByMACsecFlow(
             sai_serialize_object_id(macsec_flow_id).c_str());
         return SAI_STATUS_FAILURE;
     }
+
 
     attrs.clear();
     attrs.emplace_back();
@@ -368,9 +375,11 @@ sai_status_t SwitchStateBase::findPortByMACsecFlow(
             attrs.data()));
     auto direction = attrs.back().value.s32;
 
+
     // Find port
     attrs.clear();
     attrs.emplace_back();
+
     if (direction == SAI_MACSEC_DIRECTION_EGRESS)
     {
         attrs.back().id = SAI_PORT_ATTR_EGRESS_MACSEC_ACL;
@@ -379,9 +388,11 @@ sai_status_t SwitchStateBase::findPortByMACsecFlow(
     {
         attrs.back().id = SAI_PORT_ATTR_INGRESS_MACSEC_ACL;
     }
+
     attrs.back().value.oid = acl_table_id;
     std::vector<sai_object_id_t> port_ids;
     findObjects(SAI_OBJECT_TYPE_PORT, attrs.back(), port_ids);
+
     if (port_ids.empty())
     {
         SWSS_LOG_ERROR(
@@ -396,6 +407,7 @@ sai_status_t SwitchStateBase::findPortByMACsecFlow(
             sai_serialize_object_id(acl_table_id).c_str());
         return SAI_STATUS_FAILURE;
     }
+
     port_id = port_ids.front();
 
     return SAI_STATUS_SUCCESS;
@@ -749,6 +761,35 @@ sai_status_t SwitchStateBase::loadMACsecAttrsFromACLEntry(
         return SAI_STATUS_SUCCESS;
     }
     return SAI_STATUS_NOT_IMPLEMENTED;
+}
+
+sai_status_t SwitchStateBase::getMACsecAttr(
+        _In_ const std::string &serializedObjectId,
+        _In_ uint32_t attr_count,
+        _Out_ sai_attribute_t *attr_list)
+{
+    SWSS_LOG_ENTER();
+
+    auto ret = get_internal(
+        SAI_OBJECT_TYPE_MACSEC,
+        serializedObjectId,
+        attr_count,
+        attr_list);
+
+    if (ret != SAI_STATUS_SUCCESS)
+    {
+        return ret;
+    }
+
+    for (uint32_t i = 0; i < attr_count; i++)
+    {
+        if (attr_list[i].id == SAI_MACSEC_ATTR_SCI_IN_INGRESS_MACSEC_ACL)
+        {
+            attr_list[i].value.booldata = true;
+        }
+    }
+
+    return SAI_STATUS_SUCCESS;
 }
 
 sai_status_t SwitchStateBase::getMACsecSAAttr(
