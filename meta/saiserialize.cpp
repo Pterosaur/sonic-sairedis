@@ -1435,9 +1435,11 @@ std::string sai_serialize_hex_binary(
     {
         return s;
     }
+
     s.resize(2 * length, '0');
     const unsigned char *input = static_cast<const unsigned char *>(buffer);
     char *output = &s[0];
+
     for (size_t i = 0; i < length; i++)
     {
         snprintf(&output[i * 2], 3, "%02X", input[i]);
@@ -1653,14 +1655,12 @@ std::string sai_serialize_attr_value(
 
         case SAI_ATTR_VALUE_TYPE_MACSEC_SAK:
             return sai_serialize_hex_binary(attr.value.macsecsak);
+
         case SAI_ATTR_VALUE_TYPE_MACSEC_AUTH_KEY:
             return sai_serialize_hex_binary(attr.value.macsecauthkey);
+
         case SAI_ATTR_VALUE_TYPE_MACSEC_SALT:
             return sai_serialize_hex_binary(attr.value.macsecsalt);
-        case SAI_ATTR_VALUE_TYPE_MACSEC_SCI:
-            return sai_serialize_number(attr.value.u64);
-        case SAI_ATTR_VALUE_TYPE_MACSEC_SSCI:
-            return sai_serialize_number(attr.value.u32);
 
         case SAI_ATTR_VALUE_TYPE_SYSTEM_PORT_CONFIG:
             return sai_serialize_system_port_config(meta, attr.value.sysportconfig);
@@ -2712,43 +2712,37 @@ void sai_deserialize_hex_binary(
     _In_ size_t length)
 {
     SWSS_LOG_ENTER();
+
     if (s.length() % 2 != 0)
     {
         SWSS_LOG_THROW("Invalid hex string %s", s.c_str());
     }
+
     if (s.length() > (length * 2))
     {
         SWSS_LOG_THROW("Buffer length isn't sufficient.");
     }
+
     size_t buffer_cur = 0;
     size_t hex_cur = 0;
     unsigned char *output = static_cast<unsigned char *>(buffer);
+
     while (hex_cur < s.length())
     {
-        if (!std::isxdigit(static_cast<std::uint8_t>(s[hex_cur])))
+
+        const char temp_buffer[] = {s[hex_cur], s[hex_cur + 1], 0};
+        unsigned int value = -1;
+
+        if (sscanf(temp_buffer, "%X", &value) <= 0 || value > 0xff)
         {
-            SWSS_LOG_THROW(
-                "Invalid hex string %s at %lu(%c)",
-                s.c_str(),
-                hex_cur,
-                s[hex_cur]);
+            SWSS_LOG_THROW("Invalid hex string %s", temp_buffer);
         }
-        if (!std::isxdigit(static_cast<std::uint8_t>(s[hex_cur + 1])))
-        {
-            SWSS_LOG_THROW(
-                "Invalid hex string %s at %lu(%c)",
-                s.c_str(),
-                hex_cur + 1,
-                s[hex_cur + 1]);
-        }
-        std::stringstream stream;
-        stream << std::hex;
-        stream << s[hex_cur++];
-        stream << s[hex_cur++];
-        std::uint32_t value;
-        stream >> value;
-        output[buffer_cur++] = static_cast<std::uint8_t>(value);
+
+        output[buffer_cur] = static_cast<unsigned char>(value);
+        hex_cur += 2;
+        buffer_cur += 1;
     }
+
 }
 
 template<typename T>
@@ -2973,14 +2967,12 @@ void sai_deserialize_attr_value(
 
         case SAI_ATTR_VALUE_TYPE_MACSEC_SAK:
             return sai_deserialize_hex_binary(s, attr.value.macsecsak);
+
         case SAI_ATTR_VALUE_TYPE_MACSEC_AUTH_KEY:
             return sai_deserialize_hex_binary(s, attr.value.macsecauthkey);
+
         case SAI_ATTR_VALUE_TYPE_MACSEC_SALT:
             return sai_deserialize_hex_binary(s, attr.value.macsecsalt);
-        case SAI_ATTR_VALUE_TYPE_MACSEC_SCI:
-            return sai_deserialize_number(s, attr.value.u64);
-        case SAI_ATTR_VALUE_TYPE_MACSEC_SSCI:
-            return sai_deserialize_number(s, attr.value.u32);
 
         case SAI_ATTR_VALUE_TYPE_SYSTEM_PORT_CONFIG:
             return sai_deserialize_system_port_config(s, attr.value.sysportconfig);
@@ -3566,7 +3558,6 @@ void sai_deserialize_free_attribute_value(
 
         case SAI_ATTR_VALUE_TYPE_SYSTEM_PORT_CONFIG_LIST:
             sai_free_list(attr.value.sysportconfiglist);
-
             break;
 
         default:
