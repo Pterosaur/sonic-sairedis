@@ -9,7 +9,6 @@
 
 namespace saivs
 {
-
     class MACsecForwarder
     {
     public:
@@ -17,7 +16,7 @@ namespace saivs
             _In_ const std::string &macsec_interface_name,
             _In_ int tapfd);
 
-        virtual ~MACsecForwarder();
+        ~MACsecForwarder();
 
         int get_macsecfd() const;
 
@@ -27,10 +26,13 @@ namespace saivs
         int m_tapfd;
         int m_vethfd;
         int m_macsecfd;
+
         const std::string m_macsec_interface_name;
+
         bool m_run_thread;
+
         swss::SelectableEvent m_exit_event;
+
         std::shared_ptr<std::thread> m_forward_thread;
     };
-
-}  // namespace saivs
+}

@@ -1,7 +1,7 @@
 #include "MACsecFilter.h"
 
-#include <swss/logger.h>
-#include <swss/select.h>
+#include "swss/logger.h"
+#include "swss/select.h"
 
 #include <sys/socket.h>
 #include <linux/if_packet.h>
@@ -14,14 +14,24 @@ using namespace saivs;
 #define EAPOL_ETHER_TYPE (0x888e)
 
 MACsecFilter::MACsecFilter(
-    _In_ const std::string &macsec_interface_name,
-    _In_ int macsecfd):
-    m_macsecfd(macsecfd),
+    _In_ const std::string &macsec_interface_name):
+    m_macsec_device_enable(false),
+    m_macsecfd(0),
     m_macsec_interface_name(macsec_interface_name)
 {
     SWSS_LOG_ENTER();
 
     // empty intentionally
+}
+
+void MACsecFilter::enable_macsec_device(bool enable)
+{
+    m_macsec_device_enable = enable;
+}
+
+void MACsecFilter::set_macsec_fd(int macsecfd)
+{
+    m_macsecfd = macsecfd;
 }
 
 TrafficFilter::FilterStatus MACsecFilter::execute(
@@ -34,10 +44,15 @@ TrafficFilter::FilterStatus MACsecFilter::execute(
 
     if (ntohs(mac_hdr->h_proto) == EAPOL_ETHER_TYPE)
     {
-        // EAPOL traffic bypass macsec interface
-        // and directly forward to tap interface
+        // EAPOL traffic will never be delivered to MACsec device
         return TrafficFilter::CONTINUE;
     }
 
-    return forward(buffer, length);
+    if (m_macsec_device_enable)
+    {
+        return forward(buffer, length);
+    }
+
+    // Drop all non-EAPOL packets if macsec device haven't been enable.
+    return TrafficFilter::TERMINATE;
 }

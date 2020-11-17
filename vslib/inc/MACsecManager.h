@@ -6,26 +6,17 @@
 
 namespace saivs
 {
-
     class MACsecManager
     {
     public:
         MACsecManager();
+
         ~MACsecManager();
 
         bool create_macsec_port(
             _In_ const MACsecAttr &attr);
 
-        bool create_macsec_egress_sa(
-            _In_ const MACsecAttr &attr);
-
         bool create_macsec_sc(
-            _In_ const MACsecAttr &attr);
-
-        bool create_macsec_ingress_sc(
-            _In_ const MACsecAttr &attr);
-
-        bool create_macsec_ingress_sa(
             _In_ const MACsecAttr &attr);
 
         bool create_macsec_sa(
@@ -34,14 +25,15 @@ namespace saivs
         bool delete_macsec_port(
             _In_ const MACsecAttr &attr);
 
-        bool delete_macsec_egress_sa(
+        bool delete_macsec_sc(
             _In_ const MACsecAttr &attr);
 
-        bool delete_macsec_ingress_sc(
+        bool delete_macsec_sa(
             _In_ const MACsecAttr &attr);
 
-        bool delete_macsec_ingress_sa(
-            _In_ const MACsecAttr &attr);
+        bool enable_macsec_filter(
+            _In_ const std::string &macsecInterface,
+            _In_ bool enable);
 
         bool get_macsec_sa_pn(
             _In_ const MACsecAttr &attr,
@@ -49,43 +41,81 @@ namespace saivs
 
     private:
 
+        bool create_macsec_egress_sc(
+            _In_ const MACsecAttr &attr);
+
+        bool create_macsec_ingress_sc(
+            _In_ const MACsecAttr &attr);
+
+        bool create_macsec_egress_sa(
+            _In_ const MACsecAttr &attr);
+
+        bool create_macsec_ingress_sa(
+            _In_ const MACsecAttr &attr);
+
+        bool delete_macsec_egress_sc(
+            _In_ const MACsecAttr &attr);
+
+        bool delete_macsec_ingress_sc(
+            _In_ const MACsecAttr &attr);
+
+        bool delete_macsec_egress_sa(
+            _In_ const MACsecAttr &attr);
+
+        bool delete_macsec_ingress_sa(
+            _In_ const MACsecAttr &attr);
+
+        bool add_macsec_filter(
+            _In_ const std::string &macsecInterface);
+
+        bool add_macsec_forwarder(
+            _In_ const std::string &macsecInterface);
+        
+        bool delete_macsec_forwarder(
+            _In_ const std::string &macsecInterface);
+
         bool add_macsec_manager(
-            _In_ const std::string &macsec_interface,
+            _In_ const std::string &macsecInterface,
             _In_ std::shared_ptr<HostInterfaceInfo> info);
 
-        bool delete_macsec_traffic_manager(
-            _In_ const std::string &macsec_interface);
+        bool delete_macsec_manager(
+            _In_ const std::string &macsecInterface);
 
         bool get_macsec_device_info(
-            _In_ const std::string &macsec_device,
+            _In_ const std::string &macsecDevice,
             _Out_ std::string &info) const;
 
         bool is_macsec_device_existing(
-            _In_ const std::string &macsec_device) const;
+            _In_ const std::string &macsecDevice) const;
 
         bool get_macsec_sc_info(
-            _In_ const std::string &macsec_device,
+            _In_ const std::string &macsecDevice,
             _In_ sai_int32_t direction,
             _In_ const std::string &sci,
             _Out_ std::string &info) const;
 
         bool is_macsec_sc_existing(
-            _In_ const std::string &macsec_device,
+            _In_ const std::string &macsecDevice,
             _In_ sai_int32_t direction,
             _In_ const std::string &sci) const;
 
         bool get_macsec_sa_info(
-            _In_ const std::string &macsec_device,
+            _In_ const std::string &macsecDevice,
             _In_ sai_int32_t direction,
             _In_ const std::string &sci,
             _In_ macsec_an_t an,
             _Out_ std::string &info) const;
 
         bool is_macsec_sa_existing(
-            _In_ const std::string &macsec_device,
+            _In_ const std::string &macsecDevice,
             _In_ sai_int32_t direction,
             _In_ const std::string &sci,
             _In_ macsec_an_t an) const;
+
+        size_t get_macsec_sa_count(
+            _In_ const std::string &macsecDevice,
+            _In_ sai_int32_t direction,
+            _In_ const std::string &sci) const;
 
         void cleanup_macsec_device() const;
 
@@ -114,5 +144,4 @@ namespace saivs
         std::map<std::string, MACsecTrafficManager> m_macsec_traffic_managers;
 
     };
-
-}  // namespace saivs
+}
