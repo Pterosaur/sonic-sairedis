@@ -196,6 +196,7 @@ sai_status_t SwitchStateBase::createMACsecSC(
     SWSS_LOG_ENTER();
 
     MACsecAttr macsec_attr;
+
     if (loadMACsecAttr(
             SAI_OBJECT_TYPE_MACSEC_SC,
             macsec_sc_id,
@@ -203,6 +204,7 @@ sai_status_t SwitchStateBase::createMACsecSC(
             attr_list,
             macsec_attr) == SAI_STATUS_SUCCESS)
     {
+
         if (m_macsecManager.create_macsec_sc(macsec_attr))
         {
             SWSS_LOG_NOTICE(
@@ -210,6 +212,7 @@ sai_status_t SwitchStateBase::createMACsecSC(
                 macsec_attr.m_sci.c_str(),
                 macsec_attr.m_macsec_name.c_str());
         }
+
     }
 
     auto sid = sai_serialize_object_id(macsec_sc_id);
@@ -649,18 +652,21 @@ sai_status_t SwitchStateBase::loadMACsecAttr(
             attr_count,
             attr_list,
             macsec_attr);
+
     case SAI_OBJECT_TYPE_MACSEC_SC:
         return loadMACsecAttrFromMACsecSC(
             object_id,
             attr_count,
             attr_list,
             macsec_attr);
+
     case SAI_OBJECT_TYPE_MACSEC_SA:
         return loadMACsecAttrFromMACsecSA(
             object_id,
             attr_count,
             attr_list,
             macsec_attr);
+
     default:
         SWSS_LOG_ERROR("Wrong type %s", sai_serialize_object_type(object_type));
         break;
@@ -676,8 +682,10 @@ sai_status_t SwitchStateBase::loadMACsecAttr(
     SWSS_LOG_ENTER();
 
     std::vector<sai_attribute_t> attrs;
+
     if (dumpObject(object_type, object_id, attrs))
     {
+
         if (loadMACsecAttr(
                 object_type,
                 object_id,
@@ -685,12 +693,14 @@ sai_status_t SwitchStateBase::loadMACsecAttr(
                 attrs.data(),
                 macsec_attr) != SAI_STATUS_SUCCESS)
         {
-            SWSS_LOG_WARN(
-                "The %s %s is invalid",
+            SWSS_LOG_DEBUG(
+                "Cannot load attributions of %s %s",
                 sai_serialize_object_type(object_type).c_str(),
                 sai_serialize_object_id(object_id).c_str());
+
             return SAI_STATUS_FAILURE;
         }
+
     }
     else
     {
@@ -698,8 +708,10 @@ sai_status_t SwitchStateBase::loadMACsecAttr(
             "The %s %s is not existed",
             sai_serialize_object_type(object_type).c_str(),
             sai_serialize_object_id(object_id).c_str());
+
         return SAI_STATUS_FAILURE;
     }
+
     return SAI_STATUS_SUCCESS;
 }
 

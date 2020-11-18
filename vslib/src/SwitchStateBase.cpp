@@ -161,12 +161,12 @@ sai_status_t SwitchStateBase::create(
         return createMACsecPort(object_id, switch_id, attr_count, attr_list);
     }
 
-    // if (object_type == SAI_OBJECT_TYPE_MACSEC_SC)
-    // {
-    //     sai_object_id_t object_id;
-    //     sai_deserialize_object_id(serializedObjectId, object_id);
-    //     return createMACsecSC(object_id, switch_id, attr_count, attr_list);
-    // }
+    if (object_type == SAI_OBJECT_TYPE_MACSEC_SC)
+    {
+        sai_object_id_t object_id;
+        sai_deserialize_object_id(serializedObjectId, object_id);
+        return createMACsecSC(object_id, switch_id, attr_count, attr_list);
+    }
 
     if (object_type == SAI_OBJECT_TYPE_MACSEC_SA)
     {
@@ -376,12 +376,12 @@ sai_status_t SwitchStateBase::remove(
         return removeMACsecPort(objectId);
     }
 
-    // if (object_type == SAI_OBJECT_TYPE_MACSEC_SC)
-    // {
-    //     sai_object_id_t objectId;
-    //     sai_deserialize_object_id(serializedObjectId, objectId);
-    //     return removeMACsecSC(objectId);
-    // }
+    if (object_type == SAI_OBJECT_TYPE_MACSEC_SC)
+    {
+        sai_object_id_t objectId;
+        sai_deserialize_object_id(serializedObjectId, objectId);
+        return removeMACsecSC(objectId);
+    }
 
     if (object_type == SAI_OBJECT_TYPE_MACSEC_SA)
     {

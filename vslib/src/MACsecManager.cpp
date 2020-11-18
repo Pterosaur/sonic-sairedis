@@ -49,6 +49,14 @@ bool MACsecManager::create_macsec_sc(
 {
     SWSS_LOG_ENTER();
 
+    if (is_macsec_sc_existing(
+        attr.m_macsec_name,
+        attr.m_direction,
+        attr.m_sci))
+    {
+        return true;
+    }
+
     if (attr.m_direction == SAI_MACSEC_DIRECTION_EGRESS)
     {
 
@@ -88,7 +96,19 @@ bool MACsecManager::create_macsec_sa(
 {
     SWSS_LOG_ENTER();
 
-    if (!is_macsec_sc_existing(attr.m_macsec_name, attr.m_direction, attr.m_sci))
+    if (is_macsec_sa_existing(
+        attr.m_macsec_name,
+        attr.m_direction,
+        attr.m_sci,
+        attr.m_an))
+    {
+        return true;
+    }
+
+    if (!is_macsec_sc_existing(
+        attr.m_macsec_name,
+        attr.m_direction,
+        attr.m_sci))
     {
 
         if (!create_macsec_sc(attr))
@@ -161,6 +181,14 @@ bool MACsecManager::delete_macsec_sc(
 {
     SWSS_LOG_ENTER();
 
+    if (!is_macsec_sc_existing(
+        attr.m_macsec_name,
+        attr.m_direction,
+        attr.m_sci))
+    {
+        return true;
+    }
+
     if (attr.m_direction == SAI_MACSEC_DIRECTION_EGRESS)
     {
 
@@ -199,6 +227,15 @@ bool MACsecManager::delete_macsec_sa(
     _In_ const MACsecAttr &attr)
 {
     SWSS_LOG_ENTER();
+
+    if (!is_macsec_sa_existing(
+        attr.m_macsec_name,
+        attr.m_direction,
+        attr.m_sci,
+        attr.m_an))
+    {
+        return true;
+    }
 
     if (attr.m_direction == SAI_MACSEC_DIRECTION_EGRESS)
     {
@@ -458,15 +495,6 @@ bool MACsecManager::delete_macsec_egress_sc(
 {
     SWSS_LOG_ENTER();
 
-    if (!is_macsec_sc_existing(
-        attr.m_macsec_name,
-        attr.m_direction,
-        attr.m_sci))
-    {
-        // This macsec egress SC has been deleted
-        return true;
-    }
-
     bool result = true;
     std::ostringstream ostream;
     ostream
@@ -493,14 +521,6 @@ bool MACsecManager::delete_macsec_ingress_sc(
 {
     SWSS_LOG_ENTER();
 
-    if (!is_macsec_sc_existing(
-        attr.m_macsec_name,
-        attr.m_direction,
-        attr.m_sci))
-    {
-        return true;
-    }
-
     std::ostringstream ostream;
     ostream
         << "ip macsec set "
@@ -525,14 +545,6 @@ bool MACsecManager::delete_macsec_egress_sa(
     _In_ const MACsecAttr &attr)
 {
     SWSS_LOG_ENTER();
-
-    if (!is_macsec_sa_existing(
-        attr.m_macsec_name,
-        attr.m_direction,
-        attr.m_sci, attr.m_an))
-    {
-        return true;
-    }
 
     std::ostringstream ostream;
     ostream
@@ -559,15 +571,6 @@ bool MACsecManager::delete_macsec_ingress_sa(
     _In_ const MACsecAttr &attr)
 {
     SWSS_LOG_ENTER();
-
-    if (!is_macsec_sa_existing(
-        attr.m_macsec_name,
-        attr.m_direction,
-        attr.m_sci,
-        attr.m_an))
-    {
-        return true;
-    }
 
     std::ostringstream ostream;
     ostream
@@ -733,7 +736,7 @@ bool MACsecManager::get_macsec_sc_info(
     if (!get_macsec_device_info(macsecDevice, macsec_info))
     {
 
-        SWSS_LOG_WARN(
+        SWSS_LOG_DEBUG(
             "MACsec device %s is nonexisting",
             macsecDevice.c_str());
 
@@ -796,7 +799,7 @@ bool MACsecManager::get_macsec_sa_info(
     if (!get_macsec_sc_info(macsecDevice, direction, sci, macsec_sc_info))
     {
 
-        SWSS_LOG_WARN(
+        SWSS_LOG_DEBUG(
             "The MACsec SC %s at the device %s is nonexisting.",
             sci.c_str(),
             macsecDevice.c_str());
