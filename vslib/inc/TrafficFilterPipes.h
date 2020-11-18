@@ -8,14 +8,12 @@
 
 namespace saivs
 {
-
     class TrafficFilterPipes
     {
     public:
-
         TrafficFilterPipes() = default;
 
-        ~TrafficFilterPipes() = default;
+        virtual ~TrafficFilterPipes() = default;
 
         bool installFilter(
             _In_ int priority,
@@ -29,10 +27,9 @@ namespace saivs
             _Inout_ ssize_t &length);
 
     private:
-
         typedef std::map<int, std::shared_ptr<TrafficFilter> > FilterPriorityQueue;
+
         std::mutex m_mutex;
         FilterPriorityQueue m_filters;
     };
-
-}  // namespace saivs
+}

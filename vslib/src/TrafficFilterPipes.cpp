@@ -1,6 +1,6 @@
 #include "TrafficFilterPipes.h"
 
-#include <swss/logger.h>
+#include "swss/logger.h"
 
 using namespace saivs;
 
@@ -29,9 +29,9 @@ bool TrafficFilterPipes::uninstallFilter(
         if (itr->second == filter)
         {
             m_filters.erase(itr);
+
             return true;
         }
-
     }
 
     return false;
@@ -55,6 +55,7 @@ TrafficFilter::FilterStatus TrafficFilterPipes::execute(
             ret = filter->execute(
                 buffer,
                 length);
+
             if (ret == TrafficFilter::CONTINUE)
             {
                 itr ++;

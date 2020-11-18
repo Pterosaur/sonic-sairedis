@@ -1,6 +1,6 @@
 #include "MACsecIngressFilter.h"
 
-#include <swss/logger.h>
+#include "swss/logger.h"
 
 #include <unistd.h>
 #include <string.h>

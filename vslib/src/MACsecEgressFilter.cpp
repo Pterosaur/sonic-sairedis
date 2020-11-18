@@ -23,7 +23,6 @@ TrafficFilter::FilterStatus MACsecEgressFilter::forward(
 
     if (write(m_macsecfd, buffer, length) < 0)
     {
-
         if (errno != ENETDOWN && errno != EIO)
         {
             SWSS_LOG_ERROR(
@@ -36,14 +35,13 @@ TrafficFilter::FilterStatus MACsecEgressFilter::forward(
 
         if (errno == EBADF)
         {
-            // bad file descriptor, just end thread
             SWSS_LOG_ERROR(
                 "ending thread for macsec device %s fd %d",
                 m_macsec_interface_name.c_str(),
                 m_macsecfd);
+
             return TrafficFilter::ERROR;
         }
-
     }
 
     return TrafficFilter::TERMINATE;
