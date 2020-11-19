@@ -88,7 +88,7 @@ MACsecForwarder::~MACsecForwarder()
     if (err != 0)
     {
         SWSS_LOG_ERROR(
-            "failed to remove macsec device: %s, err: %d",
+            "failed to close macsec device: %s, err: %d",
             m_macsec_interface_name.c_str(),
             err);
     }
