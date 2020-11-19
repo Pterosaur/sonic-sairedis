@@ -49,10 +49,7 @@ bool MACsecManager::create_macsec_sc(
 {
     SWSS_LOG_ENTER();
 
-    if (is_macsec_sc_existing(
-        attr.m_macsec_name,
-        attr.m_direction,
-        attr.m_sci))
+    if (is_macsec_sc_existing( attr.m_macsec_name, attr.m_direction, attr.m_sci))
     {
         SWSS_LOG_WARN(
             "MACsec SC %s at the device %s has been created",
@@ -96,11 +93,7 @@ bool MACsecManager::create_macsec_sa(
 {
     SWSS_LOG_ENTER();
 
-    if (is_macsec_sa_existing(
-        attr.m_macsec_name,
-        attr.m_direction,
-        attr.m_sci,
-        attr.m_an))
+    if (is_macsec_sa_existing( attr.m_macsec_name, attr.m_direction, attr.m_sci, attr.m_an))
     {
         SWSS_LOG_WARN(
             "MACsec SA %s:%u at the device %s has been created",
@@ -111,10 +104,7 @@ bool MACsecManager::create_macsec_sa(
         return true;
     }
 
-    if (!is_macsec_sc_existing(
-        attr.m_macsec_name,
-        attr.m_direction,
-        attr.m_sci))
+    if (!is_macsec_sc_existing( attr.m_macsec_name, attr.m_direction, attr.m_sci))
     {
         if (!create_macsec_sc(attr))
         {
@@ -180,10 +170,7 @@ bool MACsecManager::delete_macsec_sc(
 {
     SWSS_LOG_ENTER();
 
-    if (!is_macsec_sc_existing(
-        attr.m_macsec_name,
-        attr.m_direction,
-        attr.m_sci))
+    if (!is_macsec_sc_existing( attr.m_macsec_name, attr.m_direction, attr.m_sci))
     {
         SWSS_LOG_WARN(
             "MACsec SC %s at the device %s isn't existing",
@@ -226,11 +213,7 @@ bool MACsecManager::delete_macsec_sa(
 {
     SWSS_LOG_ENTER();
 
-    if (!is_macsec_sa_existing(
-        attr.m_macsec_name,
-        attr.m_direction,
-        attr.m_sci,
-        attr.m_an))
+    if (!is_macsec_sa_existing( attr.m_macsec_name, attr.m_direction, attr.m_sci, attr.m_an))
     {
         SWSS_LOG_WARN(
             "MACsec SA %s:%u at the device %s isn't existing",
@@ -320,12 +303,7 @@ bool MACsecManager::get_macsec_sa_pn(
     pn = 1;
     std::string macsec_sa_info;
 
-    if (!get_macsec_sa_info(
-        attr.m_macsec_name,
-        attr.m_direction,
-        attr.m_sci,
-        attr.m_an,
-        macsec_sa_info))
+    if (!get_macsec_sa_info( attr.m_macsec_name, attr.m_direction, attr.m_sci, attr.m_an, macsec_sa_info))
     {
         return false;
     }
@@ -648,8 +626,10 @@ bool MACsecManager::add_macsec_manager(
     auto &manager = itr.first->second;
 
     manager.m_info = info;
+
     manager.m_ingress_filter = std::make_shared<MACsecIngressFilter>(macsecInterface);
     manager.m_egress_filter = std::make_shared<MACsecEgressFilter>(macsecInterface);
+
     manager.m_info->installEth2TapFilter(
         FilterPriority::MACSEC_FILTER,
         manager.m_ingress_filter);
@@ -826,12 +806,7 @@ bool MACsecManager::is_macsec_sa_existing(
 
     std::string macsec_sa_info;
 
-    return get_macsec_sa_info(
-        macsecDevice,
-        direction,
-        sci,
-        an,
-        macsec_sa_info);
+    return get_macsec_sa_info( macsecDevice, direction, sci, an, macsec_sa_info);
 }
 
 size_t MACsecManager::get_macsec_sa_count(
@@ -883,9 +858,7 @@ void MACsecManager::cleanup_macsec_device() const
     while(std::regex_search(search_pos, macsec_infos.cend(), matches, pattern))
     {
         std::ostringstream ostream;
-        ostream
-            << "ip link del "
-            << matches[1].str();
+        ostream << "ip link del " << matches[1].str();
 
         if (!exec(ostream.str()))
         {
