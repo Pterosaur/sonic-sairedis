@@ -13,7 +13,7 @@ namespace saivs
     {
     public:
         MACsecForwarder(
-            _In_ const std::string &macsec_interface_name,
+            _In_ const std::string &macsecInterfaceName,
             _In_ int tapfd);
 
         ~MACsecForwarder();

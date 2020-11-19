@@ -2,8 +2,8 @@
 #include "SwitchStateBase.h"
 #include "SelectableFd.h"
 
-#include <swss/logger.h>
-#include <swss/select.h>
+#include "swss/logger.h"
+#include "swss/select.h"
 
 #include <sys/socket.h>
 #include <linux/if_packet.h>
@@ -17,10 +17,10 @@ using namespace saivs;
 #define ETH_FRAME_BUFFER_SIZE (0x4000)
 
 MACsecForwarder::MACsecForwarder(
-    _In_ const std::string &macsec_interface_name,
+    _In_ const std::string &macsecInterfaceName,
     _In_ int tapfd):
     m_tapfd(tapfd),
-    m_macsec_interface_name(macsec_interface_name),
+    m_macsec_interface_name(macsecInterfaceName),
     m_run_thread(true)
 {
     SWSS_LOG_ENTER();
@@ -85,14 +85,13 @@ MACsecForwarder::~MACsecForwarder()
     m_forward_thread->join();
     int err = close(m_macsecfd);
 
-    if (err)
+    if (err != 0)
     {
         SWSS_LOG_ERROR(
             "failed to remove macsec device: %s, err: %d",
             m_macsec_interface_name.c_str(),
             err);
     }
-
 }
 
 int MACsecForwarder::get_macsecfd() const
@@ -107,7 +106,6 @@ void MACsecForwarder::forward()
     SWSS_LOG_ENTER();
 
     unsigned char buffer[ETH_FRAME_BUFFER_SIZE];
-
     swss::Select s;
     SelectableFd fd(m_macsecfd);
 
@@ -117,7 +115,6 @@ void MACsecForwarder::forward()
     while (m_run_thread)
     {
         swss::Selectable *sel = NULL;
-
         int result = s.select(&sel);
 
         if (result != swss::Select::OBJECT)
@@ -126,6 +123,7 @@ void MACsecForwarder::forward()
                 "selectable failed: %d, ending thread for %s",
                 result,
                 m_macsec_interface_name.c_str());
+
             return;
         }
 
@@ -136,7 +134,6 @@ void MACsecForwarder::forward()
 
         if (size < 0)
         {
-
             SWSS_LOG_WARN(
                 "failed to read from macsec device %s fd %d, errno(%d): %s",
                 m_macsec_interface_name.c_str(),
@@ -181,7 +178,6 @@ void MACsecForwarder::forward()
 
             continue;
         }
-
     }
 
     SWSS_LOG_NOTICE(
