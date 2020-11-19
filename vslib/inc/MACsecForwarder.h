@@ -1,7 +1,7 @@
 #pragma once
 
-#include <swss/sal.h>
-#include <swss/selectableevent.h>
+#include "swss/sal.h"
+#include "swss/selectableevent.h"
 
 #include <string>
 #include <memory>
