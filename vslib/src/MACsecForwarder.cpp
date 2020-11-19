@@ -37,6 +37,7 @@ MACsecForwarder::MACsecForwarder(
 
     struct sockaddr_ll sock_address;
     memset(&sock_address, 0, sizeof(sock_address));
+
     sock_address.sll_family = PF_PACKET;
     sock_address.sll_protocol = htons(ETH_P_ALL);
     sock_address.sll_ifindex = if_nametoindex(m_macsec_interface_name.c_str());
@@ -57,10 +58,7 @@ MACsecForwarder::MACsecForwarder(
             m_macsec_interface_name.c_str());
     }
 
-    if (bind(
-            m_macsecfd,
-            (struct sockaddr *)&sock_address,
-            sizeof(sock_address)) < 0)
+    if (bind(m_macsecfd, (struct sockaddr *)&sock_address, sizeof(sock_address)) < 0)
     {
         close(m_macsecfd);
         SWSS_LOG_THROW(
@@ -68,8 +66,7 @@ MACsecForwarder::MACsecForwarder(
             m_macsec_interface_name.c_str());
     }
 
-    m_forward_thread =
-        std::make_shared<std::thread>(&MACsecForwarder::forward, this);
+    m_forward_thread = std::make_shared<std::thread>(&MACsecForwarder::forward, this);
 
     SWSS_LOG_NOTICE(
         "setup MACsec forward rule for %s succeeded",
@@ -83,6 +80,7 @@ MACsecForwarder::~MACsecForwarder()
     m_run_thread = false;
     m_exit_event.notify();
     m_forward_thread->join();
+
     int err = close(m_macsecfd);
 
     if (err != 0)
@@ -124,7 +122,7 @@ void MACsecForwarder::forward()
                 result,
                 m_macsec_interface_name.c_str());
 
-            return;
+            break;
         }
 
         if (sel == &m_exit_event) // thread end event
@@ -147,7 +145,8 @@ void MACsecForwarder::forward()
                 SWSS_LOG_NOTICE(
                     "ending thread for macsec device %s",
                     m_macsec_interface_name.c_str());
-                return;
+
+                break;
             }
 
             continue;
