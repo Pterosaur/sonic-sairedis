@@ -1,13 +1,13 @@
 #include "MACsecAttr.h"
 
-#include <swss/logger.h>
+#include "swss/logger.h"
 
 using namespace saivs;
 
 MACsecAttr::MACsecAttr()
 {
     SWSS_LOG_ENTER();
-    std::string s;
+
     // empty intentionally
 }
 

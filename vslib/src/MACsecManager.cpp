@@ -54,6 +54,11 @@ bool MACsecManager::create_macsec_sc(
         attr.m_direction,
         attr.m_sci))
     {
+        SWSS_LOG_WARN(
+            "MACsec SC %s at the device %s has been created",
+            attr.m_sci.c_str(),
+            attr.m_macsec_name.c_str());
+
         return true;
     }
 
@@ -62,7 +67,6 @@ bool MACsecManager::create_macsec_sc(
 
         if (!create_macsec_egress_sc(attr))
         {
-
             SWSS_LOG_WARN(
                 "Cannot create MACsec egress SC %s at the device %s",
                 attr.m_sci.c_str(),
@@ -70,14 +74,11 @@ bool MACsecManager::create_macsec_sc(
 
             return false;
         }
-
     }
     else
     {
-
         if (!create_macsec_ingress_sc(attr))
         {
-
             SWSS_LOG_WARN(
                 "Cannot create MACsec ingress SC %s at the device %s",
                 attr.m_sci.c_str(),
@@ -85,7 +86,6 @@ bool MACsecManager::create_macsec_sc(
 
             return false;
         }
-
     }
 
     return true;
@@ -102,6 +102,12 @@ bool MACsecManager::create_macsec_sa(
         attr.m_sci,
         attr.m_an))
     {
+        SWSS_LOG_WARN(
+            "MACsec SA %s:%u at the device %s has been created",
+            attr.m_sci.c_str(),
+            static_cast<std::uint32_t>(attr.m_an),
+            attr.m_macsec_name.c_str());
+
         return true;
     }
 
@@ -110,10 +116,8 @@ bool MACsecManager::create_macsec_sa(
         attr.m_direction,
         attr.m_sci))
     {
-
         if (!create_macsec_sc(attr))
         {
-
             SWSS_LOG_WARN(
                 "Cannot create MACsec SC %s at the device %s.",
                 attr.m_sci.c_str(),
@@ -126,10 +130,8 @@ bool MACsecManager::create_macsec_sa(
 
     if (attr.m_direction == SAI_MACSEC_DIRECTION_EGRESS)
     {
-
         if (!create_macsec_egress_sa(attr))
         {
-
             SWSS_LOG_WARN(
                 "Cannot create MACsec egress SA %s:%u at the device %s.",
                 attr.m_sci.c_str(),
@@ -142,10 +144,8 @@ bool MACsecManager::create_macsec_sa(
     }
     else
     {
-
         if (!create_macsec_ingress_sa(attr))
         {
-
             SWSS_LOG_WARN(
                 "Cannot create MACsec ingress SA %s:%u at the device %s.",
                 attr.m_sci.c_str(),
@@ -154,7 +154,6 @@ bool MACsecManager::create_macsec_sa(
 
             return false;
         }
-
     }
 
     return true;
@@ -186,15 +185,18 @@ bool MACsecManager::delete_macsec_sc(
         attr.m_direction,
         attr.m_sci))
     {
+        SWSS_LOG_WARN(
+            "MACsec SC %s at the device %s isn't existing",
+            attr.m_sci.c_str(),
+            attr.m_macsec_name.c_str());
+
         return true;
     }
 
     if (attr.m_direction == SAI_MACSEC_DIRECTION_EGRESS)
     {
-
         if (!delete_macsec_egress_sc(attr))
         {
-
             SWSS_LOG_WARN(
                 "Cannot delete MACsec egress SC %s at the device %s.",
                 attr.m_sci.c_str(),
@@ -202,14 +204,11 @@ bool MACsecManager::delete_macsec_sc(
 
             return false;
         }
-
     }
     else
     {
-
         if (!delete_macsec_ingress_sc(attr))
         {
-
             SWSS_LOG_WARN(
                 "Cannot delete MACsec ingress SC %s at the device %s.",
                 attr.m_sci.c_str(),
@@ -217,7 +216,6 @@ bool MACsecManager::delete_macsec_sc(
 
             return false;
         }
-
     }
 
     return true;
@@ -234,15 +232,19 @@ bool MACsecManager::delete_macsec_sa(
         attr.m_sci,
         attr.m_an))
     {
+        SWSS_LOG_WARN(
+            "MACsec SA %s:%u at the device %s isn't existing",
+            attr.m_sci.c_str(),
+            static_cast<std::uint32_t>(attr.m_an),
+            attr.m_macsec_name.c_str());
+
         return true;
     }
 
     if (attr.m_direction == SAI_MACSEC_DIRECTION_EGRESS)
     {
-
         if (!delete_macsec_egress_sa(attr))
         {
-
             SWSS_LOG_WARN(
                 "Cannot delete MACsec egress SA %s:%u at the device %s.",
                 attr.m_sci.c_str(),
@@ -251,14 +253,11 @@ bool MACsecManager::delete_macsec_sa(
 
             return false;
         }
-
     }
     else
     {
-
         if (!delete_macsec_ingress_sa(attr))
         {
-
             SWSS_LOG_WARN(
                 "Cannot delete MACsec ingress SA %s:%u at the device %s.",
                 attr.m_sci.c_str(),
@@ -267,10 +266,9 @@ bool MACsecManager::delete_macsec_sa(
 
             return false;
         }
-
     }
 
-    // The SA is the last one in this MACsec SC
+    // The SA is the last one in this MACsec SC, delete the MACsec SC
     if (get_macsec_sa_count(attr.m_macsec_name, attr.m_direction, attr.m_sci) == 0)
     {
         return delete_macsec_sc(attr);
@@ -297,10 +295,8 @@ bool MACsecManager::enable_macsec_filter(
 
     if (enable)
     {
-
         if (manager.m_forwarder == nullptr)
         {
-
             SWSS_LOG_ERROR("MACsec forwarder for device %s isn't existing", macsecInterface.c_str());
 
             return false;
@@ -322,7 +318,6 @@ bool MACsecManager::get_macsec_sa_pn(
     SWSS_LOG_ENTER();
 
     pn = 1;
-
     std::string macsec_sa_info;
 
     if (!get_macsec_sa_info(
@@ -345,10 +340,8 @@ bool MACsecManager::get_macsec_sa_pn(
 
     if (std::regex_search(macsec_sa_info, matches, pattern))
     {
-
         if (matches.size() != 2)
         {
-
             SWSS_LOG_ERROR(
                 "Wrong match result %s in %s",
                 matches.str().c_str(),
@@ -363,7 +356,6 @@ bool MACsecManager::get_macsec_sa_pn(
     }
     else
     {
-
         SWSS_LOG_WARN(
             "The packet number isn't in the MACsec SA %s:%u at the device %s.",
             attr.m_sci.c_str(),
@@ -602,7 +594,6 @@ bool MACsecManager::add_macsec_forwarder(
 
     if (itr == m_macsec_traffic_managers.end())
     {
-
         SWSS_LOG_ERROR("MACsec port %s cannot be found", macsecInterface.c_str());
 
         return false;
@@ -623,7 +614,6 @@ bool MACsecManager::delete_macsec_forwarder(
 
     if (itr == m_macsec_traffic_managers.end())
     {
-
         SWSS_LOG_ERROR("MACsec port %s cannot be found", macsecInterface.c_str());
 
         return false;
@@ -648,7 +638,6 @@ bool MACsecManager::add_macsec_manager(
 
     if (!itr.second)
     {
-
         SWSS_LOG_ERROR(
             "macsec manager for %s was existed",
             macsecInterface.c_str());
@@ -735,7 +724,6 @@ bool MACsecManager::get_macsec_sc_info(
 
     if (!get_macsec_device_info(macsecDevice, macsec_info))
     {
-
         SWSS_LOG_DEBUG(
             "MACsec device %s is nonexisting",
             macsecDevice.c_str());
@@ -798,7 +786,6 @@ bool MACsecManager::get_macsec_sa_info(
 
     if (!get_macsec_sc_info(macsecDevice, direction, sci, macsec_sc_info))
     {
-
         SWSS_LOG_DEBUG(
             "The MACsec SC %s at the device %s is nonexisting.",
             sci.c_str(),
@@ -875,9 +862,7 @@ void MACsecManager::cleanup_macsec_device() const
 
     if (!exec("ip macsec show", macsec_infos))
     {
-
         SWSS_LOG_THROW("Cannot show MACsec ports");
-
     }
 
     // Here is an example of MACsec device informations
@@ -904,11 +889,9 @@ void MACsecManager::cleanup_macsec_device() const
 
         if (!exec(ostream.str()))
         {
-
             SWSS_LOG_WARN(
                 "Cannot cleanup MACsec interface %s",
                 matches[1].str().c_str());
-
         }
 
         search_pos = matches.suffix().first;
@@ -933,7 +916,6 @@ bool MACsecManager::exec(
 
     if (swss::exec(command, output) != 0)
     {
-
         SWSS_LOG_DEBUG("FAIL %s", command.c_str());
 
         return false;

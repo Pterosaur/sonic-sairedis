@@ -11,7 +11,7 @@ namespace saivs
     public:
         MACsecManager();
 
-        ~MACsecManager();
+        virtual ~MACsecManager();
 
         bool create_macsec_port(
             _In_ const MACsecAttr &attr);
@@ -131,17 +131,16 @@ namespace saivs
 
         struct MACsecTrafficManager
         {
+            MACsecTrafficManager() = default;
+
+            ~MACsecTrafficManager() = default;
+
             std::shared_ptr<HostInterfaceInfo> m_info;
             std::shared_ptr<MACsecFilter> m_ingress_filter;
             std::shared_ptr<MACsecFilter> m_egress_filter;
             std::shared_ptr<MACsecForwarder> m_forwarder;
-
-            MACsecTrafficManager() = default;
-
-            ~MACsecTrafficManager() = default;
         };
 
         std::map<std::string, MACsecTrafficManager> m_macsec_traffic_managers;
-
     };
 }
