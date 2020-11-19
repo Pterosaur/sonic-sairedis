@@ -16,7 +16,7 @@ namespace saivs
             _In_ const std::string &macsecInterfaceName,
             _In_ int tapfd);
 
-        ~MACsecForwarder();
+        virtual ~MACsecForwarder();
 
         int get_macsecfd() const;
 
