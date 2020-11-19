@@ -24,7 +24,6 @@ namespace saivs
 
     private:
         int m_tapfd;
-        int m_vethfd;
         int m_macsecfd;
 
         const std::string m_macsec_interface_name;
