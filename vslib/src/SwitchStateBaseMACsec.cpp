@@ -76,7 +76,7 @@ sai_status_t SwitchStateBase::setAclEntryMACsecFlowActive(
                         "Enable MACsec SA %s:%u at the device %s",
                         macsec_attr.m_sci.c_str(),
                         static_cast<std::uint32_t>(macsec_attr.m_an),
-                        macsec_attr.m_macsec_name.c_str());
+                        macsec_attr.m_macsecName.c_str());
 
                 }
 
@@ -128,7 +128,7 @@ sai_status_t SwitchStateBase::setAclEntryMACsecFlowActive(
 
                     SWSS_LOG_NOTICE(
                         "The MACsec port %s is created.",
-                        macsec_attrs.back().m_macsec_name.c_str());
+                        macsec_attrs.back().m_macsecName.c_str());
 
                 }
 
@@ -176,7 +176,7 @@ sai_status_t SwitchStateBase::createMACsecPort(
 
             SWSS_LOG_NOTICE(
                 "Enable MACsec port %s",
-                macsec_attr.m_macsec_name.c_str());
+                macsec_attr.m_macsecName.c_str());
 
         }
 
@@ -209,7 +209,7 @@ sai_status_t SwitchStateBase::createMACsecSC(
             SWSS_LOG_NOTICE(
                 "Create MACsec SC %s at the device %s",
                 macsec_attr.m_sci.c_str(),
-                macsec_attr.m_macsec_name.c_str());
+                macsec_attr.m_macsecName.c_str());
         }
 
     }
@@ -240,7 +240,7 @@ sai_status_t SwitchStateBase::createMACsecSA(
                 "Enable MACsec SA %s:%u at the device %s",
                 macsec_attr.m_sci.c_str(),
                 static_cast<std::uint32_t>(macsec_attr.m_an),
-                macsec_attr.m_macsec_name.c_str());
+                macsec_attr.m_macsecName.c_str());
         }
     }
 
@@ -263,7 +263,7 @@ sai_status_t SwitchStateBase::removeMACsecPort(
         {
             SWSS_LOG_NOTICE(
                 "The MACsec port %s is deleted",
-                macsec_attr.m_macsec_name.c_str());
+                macsec_attr.m_macsecName.c_str());
         }
     }
 
@@ -290,7 +290,7 @@ sai_status_t SwitchStateBase::removeMACsecSC(
             SWSS_LOG_NOTICE(
                 "The MACsec sc %s in device %s is deleted",
                 macsec_attr.m_sci.c_str(),
-                macsec_attr.m_macsec_name.c_str());
+                macsec_attr.m_macsecName.c_str());
 
         }
 
@@ -320,7 +320,7 @@ sai_status_t SwitchStateBase::removeMACsecSA(
                 "The MACsec SA %s:%u at the device %s is deleted.",
                 macsec_attr.m_sci.c_str(),
                 static_cast<std::uint32_t>(macsec_attr.m_an),
-                macsec_attr.m_macsec_name.c_str());
+                macsec_attr.m_macsecName.c_str());
 
         }
 
@@ -508,8 +508,8 @@ sai_status_t SwitchStateBase::loadMACsecAttrFromMACsecPort(
     SAI_METADATA_GET_ATTR_BY_ID(attr, SAI_MACSEC_PORT_ATTR_PORT_ID, attr_count, attr_list);
     auto port_id = attr->value.oid;
     CHECK_STATUS(findHostInterfaceInfoByPort(port_id, macsec_attr.m_info));
-    macsec_attr.m_veth_name = vs_get_veth_name(macsec_attr.m_info->m_name, port_id);
-    macsec_attr.m_macsec_name = SAI_VS_MACSEC_PREFIX + macsec_attr.m_veth_name;
+    macsec_attr.m_vethName = vs_get_veth_name(macsec_attr.m_info->m_name, port_id);
+    macsec_attr.m_macsecName = SAI_VS_MACSEC_PREFIX + macsec_attr.m_vethName;
 
     return SAI_STATUS_SUCCESS;
 }
@@ -540,7 +540,7 @@ sai_status_t SwitchStateBase::loadMACsecAttrFromMACsecSC(
     macsec_attr.m_sci = sci_convert.str();
 
     SAI_METADATA_GET_ATTR_BY_ID(attr, SAI_MACSEC_SC_ATTR_MACSEC_EXPLICIT_SCI_ENABLE, attr_count, attr_list);
-    macsec_attr.m_send_sci = attr->value.booldata;
+    macsec_attr.m_sendSci = attr->value.booldata;
 
     SAI_METADATA_GET_ATTR_BY_ID(attr, SAI_MACSEC_SC_ATTR_FLOW_ID, attr_count, attr_list);
     auto flow_id = attr->value.oid;
@@ -548,8 +548,8 @@ sai_status_t SwitchStateBase::loadMACsecAttrFromMACsecSC(
     sai_object_id_t port_id = SAI_NULL_OBJECT_ID;
     CHECK_STATUS(findPortByMACsecFlow(flow_id, port_id));
     CHECK_STATUS(findHostInterfaceInfoByPort(port_id, macsec_attr.m_info));
-    macsec_attr.m_veth_name = vs_get_veth_name(macsec_attr.m_info->m_name, port_id);
-    macsec_attr.m_macsec_name = SAI_VS_MACSEC_PREFIX + macsec_attr.m_veth_name;
+    macsec_attr.m_vethName = vs_get_veth_name(macsec_attr.m_info->m_name, port_id);
+    macsec_attr.m_macsecName = SAI_VS_MACSEC_PREFIX + macsec_attr.m_vethName;
 
     return SAI_STATUS_SUCCESS;
 }
@@ -598,14 +598,14 @@ sai_status_t SwitchStateBase::loadMACsecAttrFromMACsecSA(
     sai_object_id_t port_id = SAI_NULL_OBJECT_ID;
     CHECK_STATUS(findPortByMACsecFlow(flow_id, port_id));
     CHECK_STATUS(findHostInterfaceInfoByPort(port_id, macsec_attr.m_info));
-    macsec_attr.m_veth_name = vs_get_veth_name(macsec_attr.m_info->m_name, port_id);
-    macsec_attr.m_macsec_name = SAI_VS_MACSEC_PREFIX + macsec_attr.m_veth_name;
+    macsec_attr.m_vethName = vs_get_veth_name(macsec_attr.m_info->m_name, port_id);
+    macsec_attr.m_macsecName = SAI_VS_MACSEC_PREFIX + macsec_attr.m_vethName;
 
     SAI_METADATA_GET_ATTR_BY_ID(attr, SAI_MACSEC_SA_ATTR_AN, attr_count, attr_list);
     macsec_attr.m_an = attr->value.u8;
 
     SAI_METADATA_GET_ATTR_BY_ID(attr, SAI_MACSEC_SA_ATTR_ENCRYPTION_ENABLE, attr_count, attr_list);
-    macsec_attr.m_encryption_enable = attr->value.booldata;
+    macsec_attr.m_encryptionEnable = attr->value.booldata;
 
     SAI_METADATA_GET_ATTR_BY_ID(attr, SAI_MACSEC_SA_ATTR_SAK, attr_count, attr_list);
     macsec_attr.m_sak = sai_serialize_hex_binary(attr->value.macsecsak);
@@ -619,7 +619,7 @@ sai_status_t SwitchStateBase::loadMACsecAttrFromMACsecSA(
     }
 
     SAI_METADATA_GET_ATTR_BY_ID(attr, SAI_MACSEC_SA_ATTR_AUTH_KEY, attr_count, attr_list);
-    macsec_attr.m_auth_key = sai_serialize_hex_binary(attr->value.macsecauthkey);
+    macsec_attr.m_authKey = sai_serialize_hex_binary(attr->value.macsecauthkey);
 
     if (macsec_attr.m_direction == SAI_MACSEC_DIRECTION_EGRESS)
     {
@@ -751,10 +751,10 @@ sai_status_t SwitchStateBase::loadMACsecAttrsFromACLEntry(
             macsec_attrs.clear();
             return SAI_STATUS_FAILURE;
         }
-        macsec_attrs.back().m_veth_name =
+        macsec_attrs.back().m_vethName =
             vs_get_veth_name(macsec_attrs.back().m_info->m_name, port_id);
-        macsec_attrs.back().m_macsec_name =
-            SAI_VS_MACSEC_PREFIX + macsec_attrs.back().m_veth_name;
+        macsec_attrs.back().m_macsecName =
+            SAI_VS_MACSEC_PREFIX + macsec_attrs.back().m_vethName;
         return SAI_STATUS_SUCCESS;
     }
 
