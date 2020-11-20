@@ -21,7 +21,7 @@ MACsecForwarder::MACsecForwarder(
     _In_ int tapfd):
     m_tapfd(tapfd),
     m_macsecInterfaceName(macsecInterfaceName),
-    m_run_thread(true)
+    m_runThread(true)
 {
     SWSS_LOG_ENTER();
 
@@ -35,14 +35,14 @@ MACsecForwarder::MACsecForwarder(
             errno);
     }
 
-    struct sockaddr_ll sock_address;
-    memset(&sock_address, 0, sizeof(sock_address));
+    struct sockaddr_ll sockAddress;
+    memset(&sockAddress, 0, sizeof(sockAddress));
 
-    sock_address.sll_family = PF_PACKET;
-    sock_address.sll_protocol = htons(ETH_P_ALL);
-    sock_address.sll_ifindex = if_nametoindex(m_macsecInterfaceName.c_str());
+    sockAddress.sll_family = PF_PACKET;
+    sockAddress.sll_protocol = htons(ETH_P_ALL);
+    sockAddress.sll_ifindex = if_nametoindex(m_macsecInterfaceName.c_str());
 
-    if (sock_address.sll_ifindex == 0)
+    if (sockAddress.sll_ifindex == 0)
     {
         close(m_macsecfd);
         SWSS_LOG_THROW(
@@ -58,7 +58,7 @@ MACsecForwarder::MACsecForwarder(
             m_macsecInterfaceName.c_str());
     }
 
-    if (bind(m_macsecfd, (struct sockaddr *)&sock_address, sizeof(sock_address)) < 0)
+    if (bind(m_macsecfd, (struct sockaddr *)&sockAddress, sizeof(sockAddress)) < 0)
     {
         close(m_macsecfd);
         SWSS_LOG_THROW(
@@ -66,7 +66,7 @@ MACsecForwarder::MACsecForwarder(
             m_macsecInterfaceName.c_str());
     }
 
-    m_forward_thread = std::make_shared<std::thread>(&MACsecForwarder::forward, this);
+    m_forwardThread = std::make_shared<std::thread>(&MACsecForwarder::forward, this);
 
     SWSS_LOG_NOTICE(
         "setup MACsec forward rule for %s succeeded",
@@ -77,9 +77,9 @@ MACsecForwarder::~MACsecForwarder()
 {
     SWSS_LOG_ENTER();
 
-    m_run_thread = false;
-    m_exit_event.notify();
-    m_forward_thread->join();
+    m_runThread = false;
+    m_exitEvent.notify();
+    m_forwardThread->join();
 
     int err = close(m_macsecfd);
 
@@ -107,10 +107,10 @@ void MACsecForwarder::forward()
     swss::Select s;
     SelectableFd fd(m_macsecfd);
 
-    s.addSelectable(&m_exit_event);
+    s.addSelectable(&m_exitEvent);
     s.addSelectable(&fd);
 
-    while (m_run_thread)
+    while (m_runThread)
     {
         swss::Selectable *sel = NULL;
         int result = s.select(&sel);
@@ -125,7 +125,7 @@ void MACsecForwarder::forward()
             break;
         }
 
-        if (sel == &m_exit_event) // thread end event
+        if (sel == &m_exitEvent) // thread end event
             break;
 
         ssize_t size = read(m_macsecfd, buffer, sizeof(buffer));
@@ -154,7 +154,6 @@ void MACsecForwarder::forward()
 
         if (write(m_tapfd, buffer, static_cast<int>(size)) < 0)
         {
-
             if (errno != ENETDOWN && errno != EIO)
             {
                 SWSS_LOG_ERROR(
