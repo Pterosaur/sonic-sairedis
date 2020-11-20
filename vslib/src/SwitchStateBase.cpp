@@ -2525,6 +2525,7 @@ void SwitchStateBase::findObjects(
     SWSS_LOG_ENTER();
 
     objects.clear();
+
     SaiAttrWrap expect_wrap(object_type, &expect);
 
     for (auto &obj : m_objectHash.at(object_type))
