@@ -20,7 +20,7 @@ MACsecForwarder::MACsecForwarder(
     _In_ const std::string &macsecInterfaceName,
     _In_ int tapfd):
     m_tapfd(tapfd),
-    m_macsec_interface_name(macsecInterfaceName),
+    m_macsecInterfaceName(macsecInterfaceName),
     m_run_thread(true)
 {
     SWSS_LOG_ENTER();
@@ -31,7 +31,7 @@ MACsecForwarder::MACsecForwarder(
     {
         SWSS_LOG_THROW(
             "failed to open macsec socket %s, errno: %d",
-            m_macsec_interface_name.c_str(),
+            m_macsecInterfaceName.c_str(),
             errno);
     }
 
@@ -40,22 +40,22 @@ MACsecForwarder::MACsecForwarder(
 
     sock_address.sll_family = PF_PACKET;
     sock_address.sll_protocol = htons(ETH_P_ALL);
-    sock_address.sll_ifindex = if_nametoindex(m_macsec_interface_name.c_str());
+    sock_address.sll_ifindex = if_nametoindex(m_macsecInterfaceName.c_str());
 
     if (sock_address.sll_ifindex == 0)
     {
         close(m_macsecfd);
         SWSS_LOG_THROW(
             "failed to get interface index for %s",
-            m_macsec_interface_name.c_str());
+            m_macsecInterfaceName.c_str());
     }
 
-    if (SwitchStateBase::promisc(m_macsec_interface_name.c_str()))
+    if (SwitchStateBase::promisc(m_macsecInterfaceName.c_str()))
     {
         close(m_macsecfd);
         SWSS_LOG_THROW(
             "promisc failed on %s",
-            m_macsec_interface_name.c_str());
+            m_macsecInterfaceName.c_str());
     }
 
     if (bind(m_macsecfd, (struct sockaddr *)&sock_address, sizeof(sock_address)) < 0)
@@ -63,14 +63,14 @@ MACsecForwarder::MACsecForwarder(
         close(m_macsecfd);
         SWSS_LOG_THROW(
             "bind failed on %s",
-            m_macsec_interface_name.c_str());
+            m_macsecInterfaceName.c_str());
     }
 
     m_forward_thread = std::make_shared<std::thread>(&MACsecForwarder::forward, this);
 
     SWSS_LOG_NOTICE(
         "setup MACsec forward rule for %s succeeded",
-        m_macsec_interface_name.c_str());
+        m_macsecInterfaceName.c_str());
 }
 
 MACsecForwarder::~MACsecForwarder()
@@ -87,7 +87,7 @@ MACsecForwarder::~MACsecForwarder()
     {
         SWSS_LOG_ERROR(
             "failed to close macsec device: %s, err: %d",
-            m_macsec_interface_name.c_str(),
+            m_macsecInterfaceName.c_str(),
             err);
     }
 }
@@ -120,7 +120,7 @@ void MACsecForwarder::forward()
             SWSS_LOG_ERROR(
                 "selectable failed: %d, ending thread for %s",
                 result,
-                m_macsec_interface_name.c_str());
+                m_macsecInterfaceName.c_str());
 
             break;
         }
@@ -134,7 +134,7 @@ void MACsecForwarder::forward()
         {
             SWSS_LOG_WARN(
                 "failed to read from macsec device %s fd %d, errno(%d): %s",
-                m_macsec_interface_name.c_str(),
+                m_macsecInterfaceName.c_str(),
                 m_macsecfd,
                 errno,
                 strerror(errno));
@@ -144,7 +144,7 @@ void MACsecForwarder::forward()
                 // bad file descriptor, just close the thread
                 SWSS_LOG_NOTICE(
                     "ending thread for macsec device %s",
-                    m_macsec_interface_name.c_str());
+                    m_macsecInterfaceName.c_str());
 
                 break;
             }
@@ -159,7 +159,7 @@ void MACsecForwarder::forward()
             {
                 SWSS_LOG_ERROR(
                     "failed to write to macsec device %s fd %d, errno(%d): %s",
-                    m_macsec_interface_name.c_str(),
+                    m_macsecInterfaceName.c_str(),
                     m_macsecfd,
                     errno,
                     strerror(errno));
@@ -170,7 +170,7 @@ void MACsecForwarder::forward()
                 // bad file descriptor, just end thread
                 SWSS_LOG_ERROR(
                     "ending thread for macsec device %s fd %d",
-                    m_macsec_interface_name.c_str(),
+                    m_macsecInterfaceName.c_str(),
                     m_macsecfd);
                 return;
             }
@@ -181,6 +181,6 @@ void MACsecForwarder::forward()
 
     SWSS_LOG_NOTICE(
         "ending thread proc for %s",
-        m_macsec_interface_name.c_str());
+        m_macsecInterfaceName.c_str());
 }
 

@@ -17,16 +17,15 @@ using namespace saivs;
 
 #define SAI_VS_MACSEC_PREFIX "macsec_"
 
-#define SAI_METADATA_GET_ATTR_BY_ID(ATTR, ATTR_ID, ATTR_COUNT, ATTR_LIST)     \
-    {                                                                         \
-        ATTR = sai_metadata_get_attr_by_id(ATTR_ID, ATTR_COUNT, ATTR_LIST);   \
-        if (ATTR == NULL)                                                     \
-        {                                                                     \
-            SWSS_LOG_ERROR("attr " #ATTR_ID " was not passed");               \
-            return SAI_STATUS_FAILURE;                                        \
-        }                                                                     \
-    }                                                                         \
-    while (0);
+#define SAI_METADATA_GET_ATTR_BY_ID(attr, attr_id, attr_count, attr_list) \
+    { \
+        attr = sai_metadata_get_attr_by_id(attr_id, attr_count, attr_list); \
+        if (attr == NULL) \
+        { \
+            SWSS_LOG_ERROR("attr " #attr_id " was not passed"); \
+            return SAI_STATUS_FAILURE; \
+        } \
+    }
 
 sai_status_t SwitchStateBase::setAclEntryMACsecFlowActive(
     _In_ sai_object_id_t entry_id,
@@ -683,7 +682,7 @@ sai_status_t SwitchStateBase::loadMACsecAttr(
 
     std::vector<sai_attribute_t> attrs;
 
-    if (dumpObject(object_type, object_id, attrs))
+    if (dumpObject(object_id, attrs))
     {
 
         if (loadMACsecAttr(
