@@ -231,7 +231,10 @@ void HostInterfaceInfo::veth2tap_fun()
 
         async_process_packet_for_fdb_event(buffer, size);
 
-        auto ret = m_e2tFilters.execute(buffer, size);
+        size_t length = static_cast<size_t>(size);
+        auto ret = m_e2tFilters.execute(buffer, length);
+        size = static_cast<ssize_t>(length);
+
         if (ret == TrafficFilter::TERMINATE)
         {
             continue;
@@ -313,7 +316,10 @@ void HostInterfaceInfo::tap2veth_fun()
             continue;
         }
 
-        auto ret = m_t2eFilters.execute(buffer, size);
+        size_t length = static_cast<size_t>(size);
+        auto ret = m_t2eFilters.execute(buffer, length);
+        size = static_cast<ssize_t>(length);
+
         if (ret == TrafficFilter::TERMINATE)
         {
             continue;
