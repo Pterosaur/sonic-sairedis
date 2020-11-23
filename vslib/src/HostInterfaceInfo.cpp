@@ -195,6 +195,20 @@ void HostInterfaceInfo::veth2tap_fun()
             continue;
         }
 
+        size_t length = static_cast<size_t>(size);
+        auto ret = m_e2tFilters.execute(buffer, length);
+        size = static_cast<ssize_t>(length);
+
+        if (ret == TrafficFilter::TERMINATE)
+        {
+            continue;
+        }
+        else if (ret == TrafficFilter::ERROR)
+        {
+            // Error log should be recorded in filter
+            return;
+        }
+
         struct cmsghdr *cmsg;
 
         for (cmsg = CMSG_FIRSTHDR(&msg); cmsg != NULL; cmsg = CMSG_NXTHDR(&msg, cmsg))
@@ -230,20 +244,6 @@ void HostInterfaceInfo::veth2tap_fun()
         }
 
         async_process_packet_for_fdb_event(buffer, size);
-
-        size_t length = static_cast<size_t>(size);
-        auto ret = m_e2tFilters.execute(buffer, length);
-        size = static_cast<ssize_t>(length);
-
-        if (ret == TrafficFilter::TERMINATE)
-        {
-            continue;
-        }
-        else if (ret == TrafficFilter::ERROR)
-        {
-            // Error log should be recorded in filter
-            return;
-        }
 
         if (write(m_tapfd, buffer, size) < 0)
         {
