@@ -10,9 +10,6 @@
 #include <memory>
 #include <thread>
 
-static constexpr size_t ETH_FRAME_BUFFER_SIZE = 0x4000;
-static constexpr size_t CONTROL_MESSAGE_BUFFER_SIZE = 0x1000;
-
 namespace saivs
 {
     class MACsecForwarder :
