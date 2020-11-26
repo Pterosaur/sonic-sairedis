@@ -19,7 +19,6 @@
 
 using namespace saivs;
 
-#define ETH_FRAME_BUFFER_SIZE (0x4000)
 #define IEEE_8021Q_ETHER_TYPE (0x8100)
 #define MAC_ADDRESS_SIZE (6)
 #define VLAN_TAG_SIZE (4)
