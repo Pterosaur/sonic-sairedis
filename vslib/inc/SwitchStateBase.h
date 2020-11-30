@@ -483,9 +483,8 @@ namespace saivs
                     _In_ sai_object_id_t macsec_flow_id,
                     _Out_ sai_object_id_t &line_port_id);
 
-            sai_status_t findHostInterfaceInfoByPort(
-                    _In_ sai_object_id_t &line_port_id,
-                    _Out_ std::shared_ptr<HostInterfaceInfo> &info);
+            std::shared_ptr<HostInterfaceInfo> findHostInterfaceInfoByPort(
+                    _In_ sai_object_id_t line_port_id);
 
             sai_status_t loadMACsecAttrFromMACsecPort(
                     _In_ sai_object_id_t object_id,
