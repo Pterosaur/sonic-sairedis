@@ -109,19 +109,20 @@ libsaivs_la_SOURCES = \
 					  sai_vs_vlan.cpp \
 					  sai_vs_wred.cpp \
 					  sai_vs_my_mac.cpp \
-					  sai_vs_ipsec.cpp
+					  sai_vs_ipsec.cpp \
+					  DashSai.cpp
 
 libSaiVS_a_CPPFLAGS = $(CODE_COVERAGE_CPPFLAGS)
 libSaiVS_a_CXXFLAGS = $(DBGFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS_COMMON) $(CODE_COVERAGE_CXXFLAGS)
 
 libsaivs_la_CPPFLAGS = $(CODE_COVERAGE_CPPFLAGS)
 libsaivs_la_CXXFLAGS = $(DBGFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS_COMMON) $(CODE_COVERAGE_CXXFLAGS)
-libsaivs_la_LIBADD = -lhiredis -lswsscommon libSaiVS.a $(CODE_COVERAGE_LIBS)
+libsaivs_la_LIBADD = -lhiredis -lswsscommon -lboost_filesystem libSaiVS.a $(CODE_COVERAGE_LIBS)
 
 bin_PROGRAMS = tests
 
 tests_SOURCES = tests.cpp
 tests_CXXFLAGS = $(DBGFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS_COMMON)
-tests_LDADD = -lhiredis -lswsscommon -lpthread libsaivs.la -L$(top_srcdir)/meta/.libs -lsaimetadata -lsaimeta -lzmq
+tests_LDADD = -lhiredis -lswsscommon -lpthread libsaivs.la -L$(top_srcdir)/meta/.libs -lsaimetadata -lsaimeta -lzmq -ldl -lboost_filesystem
 
 TESTS = tests

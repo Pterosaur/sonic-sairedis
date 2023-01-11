@@ -1,5 +1,6 @@
 #include "sai_vs.h"
 #include "Sai.h"
+#include "DashSai.h"
 
 std::shared_ptr<sairedis::SaiInterface> vs_sai = std::make_shared<saivs::Sai>();
 
@@ -106,6 +107,12 @@ sai_status_t sai_api_query(
     {
         *api_method_table = ((void**)&vs_apis)[sai_api_id - 1];
         return SAI_STATUS_SUCCESS;
+    }
+
+    auto dash_sai = DashSai::getInstance();
+    if (dash_sai)
+    {
+        return dash_sai->sai_api_query(sai_api_id, api_method_table);
     }
 
     SWSS_LOG_ERROR("Invalid API type %d", sai_api_id);
