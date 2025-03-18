@@ -4065,5 +4065,7 @@ sai_status_t SwitchStateBase::queryStatsStCapability(
 {
     SWSS_LOG_ENTER();
 
+    // TODO: Fix me
+
     return SAI_STATUS_NOT_IMPLEMENTED;
 }

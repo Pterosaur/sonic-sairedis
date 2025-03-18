@@ -1450,6 +1450,8 @@ sai_status_t RedisRemoteSaiInterface::queryStatsStCapability(
 {
     SWSS_LOG_ENTER();
 
+    // TODO: Fix me
+
     return SAI_STATUS_NOT_IMPLEMENTED;
 }
 

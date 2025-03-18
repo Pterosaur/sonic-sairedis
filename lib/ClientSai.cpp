@@ -1078,6 +1078,8 @@ sai_status_t ClientSai::queryStatsStCapability(
         return SAI_STATUS_INVALID_PARAMETER;
     }
 
+    // TODO: Fix me
+
     return SAI_STATUS_NOT_IMPLEMENTED;
 }
 

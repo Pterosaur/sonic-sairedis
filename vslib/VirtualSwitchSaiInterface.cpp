@@ -1130,6 +1130,8 @@ sai_status_t VirtualSwitchSaiInterface::queryStatsStCapability(
 {
     SWSS_LOG_ENTER();
 
+    // TODO: Fix me
+
     return SAI_STATUS_NOT_IMPLEMENTED;
 }
 
