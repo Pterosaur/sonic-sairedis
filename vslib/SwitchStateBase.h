@@ -543,6 +543,11 @@ namespace saivs
             void send_fdb_event_notification(
                     _In_ const sai_fdb_event_notification_data_t& data);
 
+        public: // Telemetry and Monitor
+
+            void send_tam_tel_type_config_change(
+                _In_ sai_object_id_t tam_tel_type_id);
+
         protected:
 
             void findObjects(

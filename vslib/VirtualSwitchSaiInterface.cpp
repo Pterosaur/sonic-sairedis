@@ -1126,13 +1126,37 @@ sai_status_t VirtualSwitchSaiInterface::queryStatsCapability(
 sai_status_t VirtualSwitchSaiInterface::queryStatsStCapability(
     _In_ sai_object_id_t switchId,
     _In_ sai_object_type_t objectType,
-    _Inout_ sai_stat_st_capability_list_t *stats_capability)
+    _Inout_ sai_stat_st_capability_list_t *stats_st_capability)
 {
     SWSS_LOG_ENTER();
 
-    // TODO: Fix me
+    sai_stat_capability_list_t stats_capability;
+    std::vector<sai_stat_capability_t> stats_list(stats_st_capability->count);
+    stats_capability.count = stats_st_capability->count;
+    stats_capability.list = stats_list.data();
 
-    return SAI_STATUS_NOT_IMPLEMENTED;
+    sai_status_t status = queryStatsCapability(
+        switchId,
+        objectType,
+        &stats_capability);
+
+    if (status == SAI_STATUS_SUCCESS)
+    {
+        for (uint32_t i = 0; i < stats_capability.count; i++)
+        {
+            stats_st_capability->list[i].capability.stat_enum = stats_capability.list[i].stat_enum;
+            stats_st_capability->list[i].capability.stat_modes = stats_capability.list[i].stat_modes;
+            stats_st_capability->list[i].minimal_polling_interval = 1e6 * 100; // 100ms
+        }
+    }
+    else
+    {
+        SWSS_LOG_WARN("Failed to query stats capability for object type %s, status: %s",
+                      sai_serialize_object_type(objectType).c_str(),
+                      sai_serialize_status(status).c_str());
+    }
+
+    return status;
 }
 
 sai_status_t VirtualSwitchSaiInterface::getStatsExt(

@@ -2,6 +2,8 @@
 
 #include "swss/logger.h"
 #include "meta/sai_serialize.h"
+#include "meta/NotificationTamTelTypeConfigChange.h"
+#include "EventPayloadNotification.h"
 
 #include <net/if.h>
 #include <unistd.h>
@@ -4061,11 +4063,77 @@ sai_status_t SwitchStateBase::queryStatsCapability(
 sai_status_t SwitchStateBase::queryStatsStCapability(
     _In_ sai_object_id_t switchId,
     _In_ sai_object_type_t objectType,
-    _Inout_ sai_stat_st_capability_list_t *stats_capability)
+    _Inout_ sai_stat_st_capability_list_t *stats_st_capability)
 {
     SWSS_LOG_ENTER();
 
-    // TODO: Fix me
+    sai_stat_capability_list_t stats_capability;
+    std::vector<sai_stat_capability_t> stats_list(stats_st_capability->count);
+    stats_capability.count = stats_st_capability->count;
+    stats_capability.list = stats_list.data();
 
-    return SAI_STATUS_NOT_IMPLEMENTED;
+    sai_status_t status = queryStatsCapability(
+        switchId,
+        objectType,
+        &stats_capability);
+
+    if (status == SAI_STATUS_SUCCESS)
+    {
+        for (uint32_t i = 0; i < stats_capability.count; i++)
+        {
+            stats_st_capability->list[i].capability.stat_enum = stats_capability.list[i].stat_enum;
+            stats_st_capability->list[i].capability.stat_modes = stats_capability.list[i].stat_modes;
+            stats_st_capability->list[i].minimal_polling_interval = 1e6 * 100; // 100ms
+        }
+    }
+    else
+    {
+        SWSS_LOG_WARN("Failed to query stats capability for object type %s, status: %s",
+            sai_serialize_object_type(objectType).c_str(),
+            sai_serialize_status(status).c_str());
+    }
+
+    return status;
+}
+
+void SwitchStateBase::send_tam_tel_type_config_change(
+    _In_ sai_object_id_t tam_tel_type_id)
+{
+    SWSS_LOG_ENTER();
+
+    auto meta = getMeta();
+
+    if (meta)
+    {
+        meta->meta_sai_on_tam_tel_type_config_change(tam_tel_type_id);
+    }
+
+    sai_attribute_t attr;
+
+    attr.id = SAI_SWITCH_ATTR_FDB_EVENT_NOTIFY;
+
+    sai_status_t status = get(SAI_OBJECT_TYPE_SWITCH, m_switch_id, 1, &attr);
+
+    if (status != SAI_STATUS_SUCCESS)
+    {
+        SWSS_LOG_ERROR("unable to get SAI_SWITCH_ATTR_FDB_EVENT_NOTIFY attribute for %s",
+                       sai_serialize_object_id(m_switch_id).c_str());
+
+        return;
+    }
+
+    auto str = sai_serialize_object_id(tam_tel_type_id);
+
+    sai_switch_notifications_t sn = {};
+
+    sn.on_tam_tel_type_config_change = (sai_tam_tel_type_config_change_notification_fn)attr.value.ptr;
+
+    SWSS_LOG_INFO("send event SAI_SWITCH_ATTR_TAM_TEL_TYPE_CONFIG_CHANGE_NOTIFY %s", str.c_str());
+    // SWSS_LOG_INFO("send event SAI_SWITCH_ATTR_FDB_EVENT_NOTIFY %s", str.c_str());
+
+    auto ntf = std::make_shared<sairedis::NotificationTamTelTypeConfigChange>(str);
+
+    auto payload = std::make_shared<EventPayloadNotification>(ntf, sn);
+
+    m_switchConfig->m_eventQueue->enqueue(std::make_shared<Event>(EVENT_TYPE_NOTIFICATION, payload));
 }

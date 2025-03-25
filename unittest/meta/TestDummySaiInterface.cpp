@@ -208,6 +208,16 @@ void onTwampSessionEvent(
     ntfCounter++;
 }
 
+void onTamTelTypeConfigChange(
+        _In_ sai_object_id_t tam_tel_id)
+{
+    SWSS_LOG_ENTER();
+
+    SWSS_LOG_NOTICE("received: onTamTelTypeConfigChange");
+
+    ntfCounter++;
+}
+
 TEST(DummySaiInterface, sendNotification)
 {
     DummySaiInterface sai;
@@ -274,6 +284,10 @@ TEST(DummySaiInterface, sendNotification)
 
     attr.id = SAI_SWITCH_ATTR_TWAMP_SESSION_EVENT_NOTIFY;
     attr.value.ptr = (void*)&onTwampSessionEvent;
+    sai.set(SAI_OBJECT_TYPE_SWITCH, switch_id, &attr);
+
+    attr.id = SAI_SWITCH_ATTR_TAM_TEL_TYPE_CONFIG_CHANGE_NOTIFY;
+    attr.value.ptr = (void*)&onTamTelTypeConfigChange;
     sai.set(SAI_OBJECT_TYPE_SWITCH, switch_id, &attr);
 
     EXPECT_EQ(sai.start(), SAI_STATUS_SUCCESS);
